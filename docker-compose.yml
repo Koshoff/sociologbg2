@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+
+  # ─── База данни ───────────────────────────────────────────
+  db:
+    image: postgres:16
+    container_name: survey_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: surveydb
+      POSTGRES_USER: surveyuser
+      POSTGRES_PASSWORD: surveypass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/src/main/resources/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - survey_network
+
+  # ─── Spring Boot Backend ──────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: survey_backend
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/surveydb
+      SPRING_DATASOURCE_USERNAME: surveyuser
+      SPRING_DATASOURCE_PASSWORD: surveypass
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      JWT_SECRET: ${JWT_SECRET}
+      VOTE_HASH_PEPPER: ${VOTE_HASH_PEPPER}
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    networks:
+      - survey_network
+
+  # ─── Next.js Frontend ─────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: survey_frontend
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - survey_network
+
+volumes:
+  postgres_data:
+
+networks:
+  survey_network:
+    driver: bridge
