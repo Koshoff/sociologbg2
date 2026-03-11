@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getSurveys, Survey } from '@/lib/api';
+import Navbar from '@/app/components/Navbar';
+
 
 export default function HomePage() {
   const [surveys, setSurveys] = useState<Survey[]>([]);
@@ -21,41 +23,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-white font-sans">
 
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b-2 border-gray-900">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-slate-900 flex items-center justify-center">
-              <span className="text-white font-black text-sm">С</span>
-            </div>
-            <span className="font-black text-gray-900 text-lg tracking-tight">
-              СОЦИОЛОГ.BG
-            </span>
-          </div>
-          <nav className="flex items-center gap-1">
-            {[
-              { href: '/', label: 'НАЧАЛО' },
-              { href: '/archive', label: 'АРХИВ' },
-              { href: '/analyses', label: 'АНАЛИЗИ' },
-            ].map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="px-4 py-2 text-sm font-bold text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-150"
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translate(-2px, 2px)';
-                  e.currentTarget.style.boxShadow = '3px -3px 0px rgba(0,0,0,0.2)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translate(0, 0)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
-      </header>
+      <Navbar />
 
       {/* Hero */}
       <section className="bg-slate-900 pt-32 pb-20 px-6">

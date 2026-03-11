@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import Navbar from '@/app/components/Navbar';
+
 import { getSurvey, castVote, getResults, Survey, VoteResult } from '@/lib/api';
 
 const CHOICES = ['ДА', 'НЕ', 'ВЪЗДЪРЖАЛ СЕ'];
@@ -65,24 +67,15 @@ export default function SurveyPage() {
   const totalVotes = Object.values(total).reduce((a, b) => a + b, 0);
 
   if (loading) return (
-    <div className="min-h-screen bg-white font-sans">
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b-2 border-gray-900">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-slate-900 flex items-center justify-center">
-              <span className="text-white font-black text-sm">С</span>
-            </div>
-            <span className="font-black text-gray-900 text-lg tracking-tight">СОЦИОЛОГ.BG</span>
-          </div>
-        </div>
-      </header>
-      <div className="max-w-3xl mx-auto px-6 pt-32 space-y-4">
-        <div className="h-12 bg-gray-100 animate-pulse" />
-        <div className="h-6 bg-gray-50 animate-pulse w-2/3" />
-        <div className="h-48 bg-gray-50 animate-pulse mt-8" />
-      </div>
+  <div className="min-h-screen bg-white font-sans">
+    <Navbar />
+    <div className="max-w-3xl mx-auto px-6 pt-32 space-y-4">
+      <div className="h-12 bg-gray-100 animate-pulse" />
+      <div className="h-6 bg-gray-50 animate-pulse w-2/3" />
+      <div className="h-48 bg-gray-50 animate-pulse mt-8" />
     </div>
-  );
+  </div>
+);
 
   return (
     <div className="min-h-screen bg-white font-sans">
