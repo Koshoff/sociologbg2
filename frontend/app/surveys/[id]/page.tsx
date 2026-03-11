@@ -126,9 +126,7 @@ export default function SurveyPage() {
       <section className="bg-slate-900 pt-32 pb-16 px-6">
         <div className="max-w-3xl mx-auto">
           <div className={`transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-            <Link href="/" className="inline-flex items-center gap-2 text-gray-400 hover:text-white text-sm font-bold tracking-wider uppercase mb-6 transition-colors">
-              ← НАЗАД
-            </Link>
+        
             <div className="inline-block border border-blue-500 px-3 py-1 mb-4">
               <span className="text-blue-400 text-xs font-bold tracking-widest uppercase">
                 ● Активно проучване
@@ -143,6 +141,9 @@ export default function SurveyPage() {
             <p className="text-gray-600 text-sm mt-3 font-bold tracking-wider uppercase">
               Затваря: {survey && new Date(survey.closesAt).toLocaleDateString('bg-BG')}
             </p>
+            <Link href="/" className="inline-flex items-center gap-2 text-gray-400 hover:text-white text-sm font-bold tracking-wider uppercase mb-6 transition-colors">
+              ← НАЗАД
+            </Link>
           </div>
         </div>
       </section>
