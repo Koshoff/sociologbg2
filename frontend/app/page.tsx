@@ -3,171 +3,242 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getSurveys, Survey } from '@/lib/api';
-import Navbar from '@/app/components/Navbar';
 
 export default function HomePage() {
   const [surveys, setSurveys] = useState<Survey[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     getSurveys()
       .then(setSurveys)
-      .catch(() => setError('Грешка при зареждане'))
+      .catch(() => {})
       .finally(() => setLoading(false));
-
-    // Малко забавяне преди да покажем съдържанието
-    // Създава ефект на плавно появяване
     setTimeout(() => setVisible(true), 100);
   }, []);
 
   return (
-    <div className="min-h-screen bg-white">
-      <Navbar />
+    <div className="min-h-screen bg-white font-sans">
+
+      {/* Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b-2 border-gray-900">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-slate-900 flex items-center justify-center">
+              <span className="text-white font-black text-sm">С</span>
+            </div>
+            <span className="font-black text-gray-900 text-lg tracking-tight">
+              СОЦИОЛОГ.BG
+            </span>
+          </div>
+          <nav className="flex items-center gap-1">
+            {[
+              { href: '/', label: 'НАЧАЛО' },
+              { href: '/archive', label: 'АРХИВ' },
+              { href: '/analyses', label: 'АНАЛИЗИ' },
+            ].map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="px-4 py-2 text-sm font-bold text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-150"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translate(-2px, 2px)';
+                  e.currentTarget.style.boxShadow = '3px -3px 0px rgba(0,0,0,0.2)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translate(0, 0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+      </header>
 
       {/* Hero */}
-      <div className="border-b border-gray-100">
-        <div className="max-w-4xl mx-auto px-4 py-16">
+      <section className="bg-slate-900 pt-32 pb-20 px-6">
+        <div className="max-w-7xl mx-auto">
           <div
-            className={`max-w-xl transition-all duration-700 ${
+            className={`transition-all duration-700 ${
               visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             }`}
           >
-            
-            <h1 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">
-              Вашето мнение има значение
-            </h1>
-            <p className="text-gray-500 text-lg">
-              Анонимни проучвания на общественото мнение.
-              
-            </p>
-            <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-medium mt-6">
-              <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
-              {loading ? '...' : `${surveys.length} активни проучвания`}
+            <div className="inline-block border border-blue-500 px-3 py-1 mb-6">
+              <span className="text-blue-400 text-xs font-bold tracking-widest uppercase">
+                ● {loading ? '...' : `${surveys.length} активни проучвания`}
+              </span>
             </div>
+            <h1 className="text-5xl md:text-7xl font-black text-white leading-none mb-6 tracking-tight">
+              ТВОЕТО МНЕНИЕ<br />
+              <span className="text-blue-500">ИМА ЗНАЧЕНИЕ.</span>
+            </h1>
+            <p className="text-gray-400 text-lg max-w-xl">
+              Анонимни и достоверни социологически проучвания.
+              Гражданският вот е основата на демокрацията.
+              Гласувайте без регистрация.
+            </p>
           </div>
-          
+
+          {/* Статистика */}
+          <div className="grid grid-cols-3 gap-px bg-gray-700 mt-12 max-w-lg">
+            {[
+              { label: 'АКТИВНИ', value: surveys.length.toString() },
+              { label: 'АНОНИМНИ', value: '100%' },
+              { label: 'БЕЗ РЕГИСТРАЦИЯ', value: '✓' },
+            ].map((stat) => (
+              <div key={stat.label} className="bg-slate-900 px-6 py-4">
+                <p className="text-2xl font-black text-white">{stat.value}</p>
+                <p className="text-xs text-gray-500 font-bold tracking-wider mt-1">{stat.label}</p>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* Проучвания */}
-      <div className="max-w-4xl mx-auto px-4 py-12">
+      {/* Основно тяло — 3 колони */}
+      <main className="max-w-7xl mx-auto px-6 py-12">
+        <div className="grid grid-cols-12 gap-6">
 
-        {/* Как работи */}
-        <div
-          className={`grid grid-cols-3 gap-8 mb-12 pb-12 border-b border-gray-50 transition-all duration-700 delay-200 ${
-            visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-          }`}
-        >
-          {[
-            { num: '01', title: 'Изберете тема', desc: 'Разгледайте активните проучвания' },
-            { num: '02', title: 'Гласувайте', desc: 'Анонимно, без регистрация' },
-            { num: '03', title: 'Вижте резултатите', desc: 'В реално време' },
-          ].map((item) => (
-            <div key={item.num} className="flex gap-4">
-              <span className="text-2xl font-bold text-gray-100 flex-shrink-0">{item.num}</span>
-              <div>
-                <p className="font-semibold text-gray-900 text-sm">{item.title}</p>
-                <p className="text-gray-400 text-sm mt-0.5">{item.desc}</p>
+          {/* Лява колона — placeholder */}
+          <aside className="col-span-3 hidden lg:block">
+            <div className="border-2 border-dashed border-gray-200 p-6 mb-4">
+              <p className="text-xs font-bold text-gray-300 tracking-widest uppercase text-center">
+                Топ статистика
+              </p>
+              <div className="mt-4 space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-8 bg-gray-50 border border-gray-100" />
+                ))}
               </div>
             </div>
-          ))}
-        </div>
+            <div className="border-2 border-dashed border-gray-200 p-6">
+              <p className="text-xs font-bold text-gray-300 tracking-widest uppercase text-center">
+                Реклама
+              </p>
+              <div className="mt-4 h-40 bg-gray-50 border border-gray-100" />
+            </div>
+          </aside>
 
-        {/* Заглавие */}
-        <div
-          className={`flex justify-between items-center mb-6 transition-all duration-700 delay-300 ${
-            visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-          }`}
-        >
-          <h2 className="font-semibold text-gray-900">Текущи проучвания</h2>
-          <Link
-            href="/archive"
-            className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            Виж архива →
-          </Link>
-        </div>
-
-        {/* Зареждане */}
-        {loading && (
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-20 bg-gray-50 rounded-xl animate-pulse" />
-            ))}
-          </div>
-        )}
-
-        {/* Грешка */}
-        {error && (
-          <div className="text-center py-16 text-red-400 text-sm">{error}</div>
-        )}
-
-        {/* Празно */}
-        {!loading && !error && surveys.length === 0 && (
-          <div className="text-center py-16">
-            <p className="text-gray-400">Няма активни проучвания в момента</p>
-            <Link href="/archive" className="text-sm text-blue-500 hover:underline mt-2 inline-block">
-              Разгледайте архива
-            </Link>
-          </div>
-        )}
-
-        {/* Списък */}
-        {!loading && !error && (
-          <div className="space-y-4">
-            {surveys.map((survey, index) => (
-              <Link key={survey.id} href={`/surveys/${survey.id}`}>
-                <div
-                    className={`group flex items-center justify-between p-6 border border-gray-100 rounded-xl hover:border-blue-200 hover:bg-blue-50 hover:shadow-sm transition-all duration-150 cursor-pointer mb-4 ${
-                    visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-                  }`}
-                  style={{ transitionDelay: `${400 + index * 100}ms` }}
-                >
-                  <div className="flex items-center gap-4 flex-1 min-w-0">
-                    {/* Пулсиращ индикатор */}
-                    <div className="relative flex-shrink-0">
-                      <div className="w-2.5 h-2.5 bg-green-400 rounded-full"></div>
-                      <div className="absolute inset-0 w-2.5 h-2.5 bg-green-400 rounded-full animate-ping opacity-40"></div>
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="font-medium text-gray-900 group-hover:text-blue-700 transition-colors truncate">
-                        {survey.title}
-                      </h3>
-                      {survey.description && (
-                        <p className="text-sm text-gray-400 truncate mt-1">
-                          {survey.description}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-4 ml-4 flex-shrink-0">
-                    <div className="text-right hidden sm:block">
-                      <p className="text-xs text-gray-300">Затваря</p>
-                      <p className="text-xs text-gray-400 font-medium">
-                        {new Date(survey.closesAt).toLocaleDateString('bg-BG')}
-                      </p>
-                    </div>
-                    <div className="w-7 h-7 rounded-full border border-gray-200 flex items-center justify-center group-hover:border-blue-300 group-hover:bg-blue-100 transition-all">
-                      <span className="text-gray-400 group-hover:text-blue-500 transition-colors text-sm">→</span>
-                    </div>
-                  </div>
-                </div>
+          {/* Централна колона — проучвания */}
+          <section className="col-span-12 lg:col-span-6">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b-2 border-gray-900">
+              <h2 className="text-sm font-black text-gray-900 tracking-widest uppercase">
+                Текущи проучвания
+              </h2>
+              <Link
+                href="/archive"
+                className="text-xs font-bold text-gray-400 hover:text-gray-900 tracking-wider uppercase transition-colors"
+              >
+                Архив →
               </Link>
-            ))}
-          </div>
-        )}
-      </div>
+            </div>
+
+            {/* Зареждане */}
+            {loading && (
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-32 bg-gray-50 border border-gray-100 animate-pulse" />
+                ))}
+              </div>
+            )}
+
+            {/* Списък */}
+            {!loading && (
+              <div className="space-y-4">
+                {surveys.map((survey, index) => (
+                  <div
+                    key={survey.id}
+                    className={`border-2 border-gray-900 p-6 shadow-md transition-all duration-150 ${
+                      visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                    }`}
+                    style={{ transitionDelay: `${index * 100}ms` }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translate(-3px, 3px)';
+                      e.currentTarget.style.boxShadow = '6px -6px 0px rgba(0,0,0,0.15)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translate(0, 0)';
+                      e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.1)';
+                    }}
+                  >
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex-1 mr-4">
+                        <h3 className="font-black text-gray-900 text-lg leading-tight">
+                          {survey.title}
+                        </h3>
+                        {survey.description && (
+                          <p className="text-gray-500 text-sm mt-2">{survey.description}</p>
+                        )}
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-xs font-bold text-gray-400 tracking-wider uppercase">До</p>
+                        <p className="text-sm font-black text-gray-900">
+                          {new Date(survey.closesAt).toLocaleDateString('bg-BG')}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-green-500"></div>
+                        <span className="text-xs font-bold text-gray-400 tracking-wider uppercase">
+                          Активно
+                        </span>
+                      </div>
+                      <Link href={`/surveys/${survey.id}`}>
+                        <button className="bg-blue-600 text-white px-6 py-2 text-xs font-black tracking-widest uppercase hover:bg-blue-700 transition-colors">
+                          ГЛАСУВАЙ
+                        </button>
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+
+                {surveys.length === 0 && (
+                  <div className="border-2 border-dashed border-gray-200 p-12 text-center">
+                    <p className="text-gray-400 font-bold tracking-wider uppercase text-sm">
+                      Няма активни проучвания
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
+
+          {/* Дясна колона — placeholder */}
+          <aside className="col-span-3 hidden lg:block">
+            <div className="border-2 border-dashed border-gray-200 p-6 mb-4">
+              <p className="text-xs font-bold text-gray-300 tracking-widest uppercase text-center">
+                Последни резултати
+              </p>
+              <div className="mt-4 space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-8 bg-gray-50 border border-gray-100" />
+                ))}
+              </div>
+            </div>
+            <div className="border-2 border-dashed border-gray-200 p-6">
+              <p className="text-xs font-bold text-gray-300 tracking-widest uppercase text-center">
+                Реклама
+              </p>
+              <div className="mt-4 h-40 bg-gray-50 border border-gray-100" />
+            </div>
+          </aside>
+
+        </div>
+      </main>
 
       {/* Footer */}
-      <footer className="border-t border-gray-100 py-8 mt-8">
-        <div className="max-w-4xl mx-auto px-4 flex justify-between items-center text-sm text-gray-400">
-          <span>© 2026 Социолог.bg</span>
-          <Link href="/archive" className="hover:text-gray-600 transition-colors">
-            Архив →
-          </Link>
+      <footer className="border-t-2 border-gray-900 py-8 mt-8">
+        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
+          <span className="text-xs font-black text-gray-900 tracking-widest uppercase">
+            © 2026 Социолог.bg
+          </span>
+          <span className="text-xs font-bold text-gray-400 tracking-wider uppercase">
+            Анонимност и достоверност
+          </span>
         </div>
       </footer>
     </div>
