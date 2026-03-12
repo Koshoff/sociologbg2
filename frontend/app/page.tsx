@@ -10,6 +10,8 @@ export default function HomePage() {
   const [surveys, setSurveys] = useState<Survey[]>([]);
   const [loading, setLoading] = useState(true);
   const [visible, setVisible] = useState(false);
+  const [totalVotes, setTotalVotes] = useState<number>(0);
+
 
   useEffect(() => {
     getSurveys()
@@ -17,6 +19,10 @@ export default function HomePage() {
       .catch(() => {})
       .finally(() => setLoading(false));
     setTimeout(() => setVisible(true), 100);
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/votes/total`)
+      .then(res => res.json())
+      .then(data => setTotalVotes(data.total))
+      .catch(() => {});
   }, []);
 
   return (
@@ -26,7 +32,7 @@ export default function HomePage() {
       <Navbar />
 
       {/* Hero */}
-      <section className="bg-slate-900 pt-32 pb-20 px-6">
+      <section className="bg-slate-900 pt-28 pb-20 px-6">
         <div className="max-w-7xl mx-auto">
           <div
             className={`transition-all duration-700 ${
