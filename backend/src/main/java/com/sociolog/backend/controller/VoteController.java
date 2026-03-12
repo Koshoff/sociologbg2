@@ -61,4 +61,10 @@ public class VoteController {
             @PathVariable UUID surveyId) {
         return ResponseEntity.ok(voteService.getResults(surveyId));
     }
+
+    @GetMapping("/total")
+    public ResponseEntity<?> getTotalVotes() {
+        long total = voteRepository.count();
+        return ResponseEntity.ok(Map.of("total", total));
+}
 }
