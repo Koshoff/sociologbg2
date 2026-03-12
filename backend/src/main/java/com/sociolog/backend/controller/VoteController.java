@@ -3,7 +3,6 @@ package com.sociolog.backend.controller;
 import com.sociolog.backend.dto.VoteRequest;
 import com.sociolog.backend.dto.VoteResponse;
 import com.sociolog.backend.entity.Vote;
-import com.sociolog.backend.repository.VoteRepository;
 import com.sociolog.backend.service.VoteService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -65,7 +64,6 @@ public class VoteController {
 
     @GetMapping("/total")
     public ResponseEntity<?> getTotalVotes() {
-        long total = voteService.getTotalVotesAll();
-        return ResponseEntity.ok(Map.of("total", total));
-}
+        return ResponseEntity.ok(Map.of("total", voteService.getTotalVotesAll()));
+    }
 }

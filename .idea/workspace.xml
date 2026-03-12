@@ -6,8 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="1d8af004-cc82-42ee-bd9c-aa3222c4aa7b" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/sociolog/backend/controller/VoteController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/sociolog/backend/controller/VoteController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/sociolog/backend/repository/VoteRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/sociolog/backend/repository/VoteRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/sociolog/backend/service/VoteService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/sociolog/backend/service/VoteService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
