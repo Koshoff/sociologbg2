@@ -56,9 +56,10 @@ export default function HomePage() {
           </div>
 
           {/* Статистика */}
-          <div className="grid grid-cols-3 gap-px bg-gray-700 mt-12 max-w-lg">
+          <div className="grid grid-cols-4 gap-px bg-gray-700 mt-10 max-w-xl">
             {[
               { label: 'АКТИВНИ', value: surveys.length.toString() },
+              { label: 'ОБЩО ГЛАСОВЕ', value: totalVotes.toLocaleString('bg-BG') },
               { label: 'АНОНИМНИ', value: '100%' },
               { label: 'БЕЗ РЕГИСТРАЦИЯ', value: '✓' },
             ].map((stat) => (
