@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+export const metadata = { title: 'Дашборд' };
+
+
 const API_URL = 'http://localhost:8080';
 
 interface Survey {

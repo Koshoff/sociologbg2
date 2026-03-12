@@ -1,7 +1,9 @@
 'use client';
 
+import Navbar from '@/app/components/Navbar';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
@@ -23,6 +25,7 @@ interface ArchivedSurvey {
     anonymous: Record<string, number>;
   };
 }
+export const metadata = { title: 'Архив' };
 
 export default function ArchivePage() {
   const [archived, setArchived] = useState<ArchivedSurvey[]>([]);
@@ -41,17 +44,7 @@ export default function ArchivePage() {
     <div className="min-h-screen bg-white">
 
       {/* Навигация */}
-      <nav className="border-b border-gray-100">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">С</span>
-            </div>
-            <span className="font-bold text-gray-900">Социолог.bg</span>
-          </Link>
-          <span className="text-sm text-gray-400">Архив</span>
-        </div>
-      </nav>
+      <Navbar />
 
       <div className="max-w-4xl mx-auto px-4 py-12">
 

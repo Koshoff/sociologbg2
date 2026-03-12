@@ -7,6 +7,8 @@ import Navbar from '@/app/components/Navbar';
 
 import { getSurvey, castVote, getResults, Survey, VoteResult } from '@/lib/api';
 
+export const metadata = { title: 'Проучване' };
+
 const CHOICES = ['ДА', 'НЕ', 'ВЪЗДЪРЖАЛ СЕ'];
 
 export default function SurveyPage() {
