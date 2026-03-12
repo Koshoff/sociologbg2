@@ -125,4 +125,8 @@ public class VoteService {
     public long getTotalVotes(UUID surveyId) {
         return voteRepository.countBySurveyId(surveyId);
     }
+
+    public long getTotalVotesAll() {
+        return voteRepository.count();
+    }
 }

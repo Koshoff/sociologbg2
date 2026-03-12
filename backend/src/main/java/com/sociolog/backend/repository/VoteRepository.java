@@ -35,4 +35,6 @@ public interface VoteRepository extends JpaRepository<Vote, UUID> {
 
     long countBySurveyId(UUID surveyId);
 
+    long count();
+
 }
