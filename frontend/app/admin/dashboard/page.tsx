@@ -3,10 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export const metadata = { title: 'Дашборд' };
-
-
-const API_URL = 'http://localhost:8080';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 interface Survey {
   id: string;
@@ -17,35 +14,51 @@ interface Survey {
   createdAt: string;
 }
 
-interface Stats {
-  survey: Survey;
-  totalVotes: number;
-  results: {
-    total: Record<string, number>;
-    verified: Record<string, number>;
-    partial: Record<string, number>;
-    anonymous: Record<string, number>;
-  };
+interface Article {
+  id: string;
+  title: string;
+  content: string;
+  summary: string;
+  status: string;
+  surveyId: string | null;
+  surveyTitle: string | null;
+  createdAt: string;
+  publishedAt: string | null;
 }
+
+type Tab = 'surveys' | 'articles';
 
 export default function AdminDashboard() {
   const router = useRouter();
+  const [tab, setTab] = useState<Tab>('articles');
   const [surveys, setSurveys] = useState<Survey[]>([]);
-  const [selectedStats, setSelectedStats] = useState<Stats | null>(null);
+  const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showCreateForm, setShowCreateForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Форма за ново проучване
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [closesAt, setClosesAt] = useState('');
+  // Форма за анкети
+  const [showCreateSurvey, setShowCreateSurvey] = useState(false);
+  const [surveyTitle, setSurveyTitle] = useState('');
+  const [surveyDescription, setSurveyDescription] = useState('');
+  const [surveyClosesAt, setSurveyClosesAt] = useState('');
 
-  // Вземаме токена от localStorage
+  // AI генериране
+  const [showGenerateForm, setShowGenerateForm] = useState(false);
+  const [topic, setTopic] = useState('');
+  const [generating, setGenerating] = useState(false);
+  const [generatedArticle, setGeneratedArticle] = useState<Article | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
+  const [editSummary, setEditSummary] = useState('');
+
+  // Публикуване
+  const [showPublishForm, setShowPublishForm] = useState(false);
+  const [publishSurveyTitle, setPublishSurveyTitle] = useState('');
+  const [publishSurveyDescription, setPublishSurveyDescription] = useState('');
+  const [publishClosesAt, setPublishClosesAt] = useState('');
+
   const getToken = () => localStorage.getItem('adminToken');
 
-  // Хелпър за автентикирани заявки
-  // Автоматично добавя Authorization header към всяка заявка
   const authFetch = (url: string, options: RequestInit = {}) => {
     return fetch(url, {
       ...options,
@@ -58,24 +71,19 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
-    // Проверяваме дали има токен — ако не → пренасочваме към login
-    if (!getToken()) {
-      router.push('/admin');
-      return;
-    }
-    loadSurveys();
+    if (!getToken()) { router.push('/admin'); return; }
+    loadAll();
   }, []);
 
-  const loadSurveys = async () => {
+  const loadAll = async () => {
+    setLoading(true);
     try {
-      const res = await authFetch(`${API_URL}/api/admin/surveys`);
-      if (res.status === 401) {
-        // Токенът е изтекъл → пренасочваме към login
-        router.push('/admin');
-        return;
-      }
-      const data = await res.json();
-      setSurveys(data);
+      const [s, a] = await Promise.all([
+        authFetch(`${API_URL}/api/admin/surveys`).then(r => r.json()),
+        authFetch(`${API_URL}/api/articles/admin/all`).then(r => r.json()),
+      ]);
+      setSurveys(s);
+      setArticles(a);
     } catch {
       setError('Грешка при зареждане');
     } finally {
@@ -83,291 +91,415 @@ export default function AdminDashboard() {
     }
   };
 
-  const loadStats = async (id: string) => {
-    try {
-      const res = await authFetch(`${API_URL}/api/admin/surveys/${id}/stats`);
-      const data = await res.json();
-      setSelectedStats(data);
-    } catch {
-      setError('Грешка при зареждане на статистика');
-    }
-  };
-
   const createSurvey = async () => {
-    if (!title || !closesAt) return;
-
+    if (!surveyTitle || !surveyClosesAt) return;
     try {
-      const res = await authFetch(`${API_URL}/api/admin/surveys`, {
+      await authFetch(`${API_URL}/api/admin/surveys`, {
         method: 'POST',
-        body: JSON.stringify({ title, description, closesAt }),
+        body: JSON.stringify({ title: surveyTitle, description: surveyDescription, closesAt: surveyClosesAt }),
       });
-
-      if (res.ok) {
-        // Изчистваме формата
-        setTitle('');
-        setDescription('');
-        setClosesAt('');
-        setShowCreateForm(false);
-        // Презареждаме списъка
-        loadSurveys();
-      }
-    } catch {
-      setError('Грешка при създаване');
-    }
+      setSurveyTitle(''); setSurveyDescription(''); setSurveyClosesAt('');
+      setShowCreateSurvey(false);
+      loadAll();
+    } catch { setError('Грешка при създаване'); }
   };
 
   const closeSurvey = async (id: string) => {
-    if (!confirm('Сигурни ли сте че искате да затворите проучването?')) return;
+    if (!confirm('Затваряне на проучването?')) return;
+    await authFetch(`${API_URL}/api/admin/surveys/${id}/close`, { method: 'PUT' });
+    loadAll();
+  };
 
+  const generateArticle = async () => {
+    if (!topic) return;
+    setGenerating(true);
+    setError(null);
     try {
-      await authFetch(`${API_URL}/api/admin/surveys/${id}/close`, {
-        method: 'PUT',
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: `Ти си журналист който пише за българска новинарска платформа. 
+Пиши на български език. Статиите трябва да са обективни, достоверни и балансирани.
+Отговаряй САМО с JSON в следния формат без никакъв друг текст:
+{
+  "title": "заглавие на статията",
+  "content": "съдържание на статията (3-4 параграфа)",
+  "summary": "кратко резюме (1-2 изречения)",
+  "surveyQuestion": "въпрос за анкета свързан с темата"
+}`,
+          messages: [{ role: 'user', content: `Напиши новинарска статия по темата: ${topic}` }],
+        }),
       });
-      loadSurveys();
+      const data = await response.json();
+      const text = data.content[0].text;
+      const parsed = JSON.parse(text);
+
+      const res = await authFetch(`${API_URL}/api/articles/admin/create`, {
+        method: 'POST',
+        body: JSON.stringify({
+          title: parsed.title,
+          content: parsed.content,
+          summary: parsed.summary,
+        }),
+      });
+      const article = await res.json();
+      setGeneratedArticle(article);
+      setEditTitle(article.title);
+      setEditContent(article.content);
+      setEditSummary(article.summary);
+      setPublishSurveyTitle(parsed.surveyQuestion);
+      setTopic('');
+      setShowGenerateForm(false);
     } catch {
-      setError('Грешка при затваряне');
+      setError('Грешка при генериране. Опитайте отново.');
+    } finally {
+      setGenerating(false);
     }
+  };
+
+  const saveEdits = async () => {
+    if (!generatedArticle) return;
+    await authFetch(`${API_URL}/api/articles/admin/${generatedArticle.id}/update`, {
+      method: 'PUT',
+      body: JSON.stringify({ title: editTitle, content: editContent, summary: editSummary }),
+    });
+    setGeneratedArticle({ ...generatedArticle, title: editTitle, content: editContent, summary: editSummary });
+  };
+
+  const publishArticle = async () => {
+    if (!generatedArticle || !publishSurveyTitle || !publishClosesAt) return;
+    try {
+      await authFetch(`${API_URL}/api/articles/admin/${generatedArticle.id}/publish`, {
+        method: 'POST',
+        body: JSON.stringify({
+          surveyTitle: publishSurveyTitle,
+          surveyDescription: publishSurveyDescription,
+          closesAt: publishClosesAt,
+        }),
+      });
+      setGeneratedArticle(null);
+      setShowPublishForm(false);
+      loadAll();
+    } catch { setError('Грешка при публикуване'); }
   };
 
   const logout = () => {
     localStorage.removeItem('adminToken');
-    localStorage.removeItem('adminUsername');
     router.push('/admin');
   };
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <p className="text-gray-500">Зареждане...</p>
+    <div className="min-h-screen bg-white flex items-center justify-center font-sans">
+      <div className="text-center">
+        <div className="w-8 h-8 bg-slate-900 mx-auto mb-4" />
+        <p className="text-xs font-black text-gray-400 tracking-widest uppercase">Зареждане...</p>
+      </div>
     </div>
   );
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white font-sans">
+
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">Социолог.bg</h1>
-            <p className="text-sm text-gray-500">Admin панел</p>
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b-2 border-gray-900">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-slate-900 flex items-center justify-center">
+              <span className="text-white font-black text-sm">С</span>
+            </div>
+            <div>
+              <span className="font-black text-gray-900 text-lg tracking-tight">СОЦИОЛОГ.BG</span>
+              <span className="text-xs font-bold text-gray-400 tracking-widest uppercase ml-3">ADMIN</span>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">
-              {localStorage.getItem('adminUsername')}
-            </span>
-            <button
-              onClick={logout}
-              className="text-sm text-red-600 hover:underline"
-            >
-              Изход
-            </button>
-          </div>
+          <button onClick={logout} className="text-xs font-black text-red-500 tracking-widest uppercase hover:text-red-700 transition-colors">
+            ИЗХОД
+          </button>
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-6 pt-28 pb-12">
+
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-6">
-            <p className="text-red-600 text-sm">{error}</p>
+          <div className="border-2 border-red-500 p-4 mb-6">
+            <p className="text-red-500 text-sm font-bold">{error}</p>
           </div>
         )}
 
-        {/* Бутон за ново проучване */}
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-lg font-semibold text-gray-900">
-            Проучвания ({surveys.length})
-          </h2>
-          <button
-            onClick={() => setShowCreateForm(!showCreateForm)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-          >
-            + Ново проучване
-          </button>
+        {/* Табове */}
+        <div className="flex gap-px bg-gray-900 w-fit mb-8">
+          {(['articles', 'surveys'] as Tab[]).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`px-6 py-3 text-xs font-black tracking-widest uppercase transition-colors ${
+                tab === t ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              {t === 'articles' ? `Статии (${articles.length})` : `Анкети (${surveys.length})`}
+            </button>
+          ))}
         </div>
 
-        {/* Форма за създаване */}
-        {showCreateForm && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
-            <h3 className="font-semibold text-gray-900 mb-4">Ново проучване</h3>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Заглавие *
-                </label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Въведете заглавие"
-                />
+        {/* ─── СТАТИИ ─── */}
+        {tab === 'articles' && (
+          <div>
+            {/* Генериране */}
+            {!generatedArticle && (
+              <div className="mb-8">
+                {!showGenerateForm ? (
+                  <button
+                    onClick={() => setShowGenerateForm(true)}
+                    className="bg-slate-900 text-white px-6 py-3 text-xs font-black tracking-widest uppercase hover:bg-slate-700 transition-colors"
+                  >
+                    + ГЕНЕРИРАЙ СТАТИЯ С AI
+                  </button>
+                ) : (
+                  <div className="border-2 border-gray-900 p-6">
+                    <p className="text-xs font-black text-gray-900 tracking-widest uppercase mb-4 border-b-2 border-gray-900 pb-2">
+                      Генериране на статия
+                    </p>
+                    <input
+                      type="text"
+                      value={topic}
+                      onChange={(e) => setTopic(e.target.value)}
+                      placeholder="Тема на статията (напр. 'Изборите в САЩ 2026')"
+                      className="w-full border-2 border-gray-900 px-4 py-3 text-sm font-bold focus:outline-none focus:border-blue-600 mb-4"
+                    />
+                    <div className="flex gap-3">
+                      <button
+                        onClick={generateArticle}
+                        disabled={!topic || generating}
+                        className="bg-blue-600 text-white px-6 py-3 text-xs font-black tracking-widest uppercase hover:bg-blue-700 disabled:opacity-40 transition-colors"
+                      >
+                        {generating ? 'ГЕНЕРИРАНЕ...' : 'ГЕНЕРИРАЙ'}
+                      </button>
+                      <button
+                        onClick={() => setShowGenerateForm(false)}
+                        className="border-2 border-gray-900 px-6 py-3 text-xs font-black tracking-widest uppercase hover:bg-gray-50 transition-colors"
+                      >
+                        ОТКАЖИ
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
+            )}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Описание
-                </label>
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  rows={3}
-                  placeholder="Въведете описание (незадължително)"
-                />
-              </div>
+            {/* Редактиране на генерирана статия */}
+            {generatedArticle && (
+              <div className="border-2 border-blue-600 p-6 mb-8">
+                <div className="flex justify-between items-center mb-4 pb-2 border-b-2 border-gray-900">
+                  <p className="text-xs font-black text-blue-600 tracking-widest uppercase">
+                    ● Нова статия — прегледай и публикувай
+                  </p>
+                  <button onClick={() => setGeneratedArticle(null)} className="text-xs font-black text-gray-400 hover:text-gray-900">
+                    ОТКАЖИ
+                  </button>
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Затваря на *
-                </label>
-                <input
-                  type="datetime-local"
-                  value={closesAt}
-                  onChange={(e) => setClosesAt(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <label className="text-xs font-black text-gray-400 tracking-widest uppercase block mb-1">Заглавие</label>
+                    <input
+                      type="text"
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      className="w-full border-2 border-gray-900 px-4 py-3 text-sm font-bold focus:outline-none focus:border-blue-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-black text-gray-400 tracking-widest uppercase block mb-1">Резюме</label>
+                    <input
+                      type="text"
+                      value={editSummary}
+                      onChange={(e) => setEditSummary(e.target.value)}
+                      className="w-full border-2 border-gray-900 px-4 py-3 text-sm font-bold focus:outline-none focus:border-blue-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-black text-gray-400 tracking-widest uppercase block mb-1">Съдържание</label>
+                    <textarea
+                      value={editContent}
+                      onChange={(e) => setEditContent(e.target.value)}
+                      rows={10}
+                      className="w-full border-2 border-gray-900 px-4 py-3 text-sm font-bold focus:outline-none focus:border-blue-600"
+                    />
+                  </div>
+                </div>
 
-              <div className="flex gap-3">
                 <button
-                  onClick={createSurvey}
-                  disabled={!title || !closesAt}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                  onClick={saveEdits}
+                  className="border-2 border-gray-900 px-6 py-2 text-xs font-black tracking-widest uppercase hover:bg-gray-50 mb-6 transition-colors"
                 >
-                  Създай
+                  ЗАПАЗИ ПРОМЕНИТЕ
                 </button>
-                <button
-                  onClick={() => setShowCreateForm(false)}
-                  className="px-4 py-2 border border-gray-300 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
-                >
-                  Откажи
-                </button>
+
+                {/* Анкета */}
+                <div className="border-t-2 border-gray-900 pt-6">
+                  <p className="text-xs font-black text-gray-900 tracking-widest uppercase mb-4">
+                    Свързана анкета
+                  </p>
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      value={publishSurveyTitle}
+                      onChange={(e) => setPublishSurveyTitle(e.target.value)}
+                      placeholder="Въпрос за анкетата"
+                      className="w-full border-2 border-gray-900 px-4 py-3 text-sm font-bold focus:outline-none focus:border-blue-600"
+                    />
+                    <input
+                      type="text"
+                      value={publishSurveyDescription}
+                      onChange={(e) => setPublishSurveyDescription(e.target.value)}
+                      placeholder="Описание на анкетата (незадължително)"
+                      className="w-full border-2 border-gray-900 px-4 py-3 text-sm font-bold focus:outline-none focus:border-blue-600"
+                    />
+                    <input
+                      type="datetime-local"
+                      value={publishClosesAt}
+                      onChange={(e) => setPublishClosesAt(e.target.value)}
+                      className="w-full border-2 border-gray-900 px-4 py-3 text-sm font-bold focus:outline-none focus:border-blue-600"
+                    />
+                  </div>
+                  <button
+                    onClick={publishArticle}
+                    disabled={!publishSurveyTitle || !publishClosesAt}
+                    className="mt-4 bg-blue-600 text-white px-6 py-3 text-xs font-black tracking-widest uppercase hover:bg-blue-700 disabled:opacity-40 transition-colors"
+                  >
+                    ПУБЛИКУВАЙ
+                  </button>
+                </div>
               </div>
+            )}
+
+            {/* Списък статии */}
+            <div className="space-y-3">
+              {articles.map((article) => (
+                <div key={article.id} className="border-2 border-gray-900 p-5 flex justify-between items-start">
+                  <div className="flex-1 mr-4">
+                    <div className="flex items-center gap-3 mb-1">
+                      <span className={`text-xs font-black tracking-widest uppercase ${
+                        article.status === 'published' ? 'text-green-600' : 'text-yellow-600'
+                      }`}>
+                        ● {article.status === 'published' ? 'ПУБЛИКУВАНА' : 'DRAFT'}
+                      </span>
+                    </div>
+                    <p className="font-black text-gray-900">{article.title}</p>
+                    <p className="text-xs text-gray-400 font-bold mt-1">{article.summary}</p>
+                    {article.surveyTitle && (
+                      <p className="text-xs text-blue-600 font-bold mt-1">Анкета: {article.surveyTitle}</p>
+                    )}
+                  </div>
+                  <p className="text-xs font-bold text-gray-400 whitespace-nowrap">
+                    {new Date(article.createdAt).toLocaleDateString('bg-BG')}
+                  </p>
+                </div>
+              ))}
+
+              {articles.length === 0 && (
+                <div className="border-2 border-dashed border-gray-200 p-12 text-center">
+                  <p className="text-gray-400 font-bold tracking-wider uppercase text-sm">
+                    Няма статии — генерирай първата!
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Списък с проучвания */}
-          <div className="space-y-3">
-            {surveys.map((survey) => (
-              <div
-                key={survey.id}
-                className="bg-white rounded-lg shadow-sm border border-gray-100 p-4"
+        {/* ─── АНКЕТИ ─── */}
+        {tab === 'surveys' && (
+          <div>
+            <div className="flex justify-between items-center mb-6">
+              <p className="text-xs font-black text-gray-400 tracking-widest uppercase">
+                Всички анкети
+              </p>
+              <button
+                onClick={() => setShowCreateSurvey(!showCreateSurvey)}
+                className="bg-slate-900 text-white px-6 py-3 text-xs font-black tracking-widest uppercase hover:bg-slate-700 transition-colors"
               >
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-medium text-gray-900">{survey.title}</h3>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${
-                        survey.isActive
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-gray-100 text-gray-500'
-                      }`}>
-                        {survey.isActive ? 'Активно' : 'Затворено'}
-                      </span>
-                    </div>
-                    {survey.description && (
-                      <p className="text-sm text-gray-500 mb-2">{survey.description}</p>
-                    )}
-                    <p className="text-xs text-gray-400">
-                      Затваря: {new Date(survey.closesAt).toLocaleDateString('bg-BG')}
-                    </p>
+                + НОВА АНКЕТА
+              </button>
+            </div>
+
+            {showCreateSurvey && (
+              <div className="border-2 border-gray-900 p-6 mb-6">
+                <p className="text-xs font-black text-gray-900 tracking-widest uppercase mb-4 border-b-2 border-gray-900 pb-2">
+                  Нова анкета
+                </p>
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    value={surveyTitle}
+                    onChange={(e) => setSurveyTitle(e.target.value)}
+                    placeholder="Заглавие *"
+                    className="w-full border-2 border-gray-900 px-4 py-3 text-sm font-bold focus:outline-none focus:border-blue-600"
+                  />
+                  <textarea
+                    value={surveyDescription}
+                    onChange={(e) => setSurveyDescription(e.target.value)}
+                    placeholder="Описание (незадължително)"
+                    rows={3}
+                    className="w-full border-2 border-gray-900 px-4 py-3 text-sm font-bold focus:outline-none focus:border-blue-600"
+                  />
+                  <input
+                    type="datetime-local"
+                    value={surveyClosesAt}
+                    onChange={(e) => setSurveyClosesAt(e.target.value)}
+                    className="w-full border-2 border-gray-900 px-4 py-3 text-sm font-bold focus:outline-none focus:border-blue-600"
+                  />
+                  <div className="flex gap-3">
+                    <button
+                      onClick={createSurvey}
+                      disabled={!surveyTitle || !surveyClosesAt}
+                      className="bg-blue-600 text-white px-6 py-3 text-xs font-black tracking-widest uppercase hover:bg-blue-700 disabled:opacity-40 transition-colors"
+                    >
+                      СЪЗДАЙ
+                    </button>
+                    <button
+                      onClick={() => setShowCreateSurvey(false)}
+                      className="border-2 border-gray-900 px-6 py-3 text-xs font-black tracking-widest uppercase hover:bg-gray-50 transition-colors"
+                    >
+                      ОТКАЖИ
+                    </button>
                   </div>
                 </div>
+              </div>
+            )}
 
-                <div className="flex gap-2 mt-3">
-                  <button
-                    onClick={() => loadStats(survey.id)}
-                    className="text-xs px-3 py-1 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition-colors"
-                  >
-                    Статистика
-                  </button>
+            <div className="space-y-3">
+              {surveys.map((survey) => (
+                <div key={survey.id} className="border-2 border-gray-900 p-5 flex justify-between items-center">
+                  <div>
+                    <div className="flex items-center gap-3 mb-1">
+                      <div className={`w-2 h-2 ${survey.isActive ? 'bg-green-500' : 'bg-gray-400'}`} />
+                      <span className="text-xs font-black text-gray-400 tracking-widest uppercase">
+                        {survey.isActive ? 'АКТИВНО' : 'ЗАТВОРЕНО'}
+                      </span>
+                    </div>
+                    <p className="font-black text-gray-900">{survey.title}</p>
+                    <p className="text-xs font-bold text-gray-400 mt-1">
+                      До: {new Date(survey.closesAt).toLocaleDateString('bg-BG')}
+                    </p>
+                  </div>
                   {survey.isActive && (
                     <button
                       onClick={() => closeSurvey(survey.id)}
-                      className="text-xs px-3 py-1 bg-red-50 text-red-600 rounded hover:bg-red-100 transition-colors"
+                      className="border-2 border-red-500 text-red-500 px-4 py-2 text-xs font-black tracking-widest uppercase hover:bg-red-50 transition-colors"
                     >
-                      Затвори
+                      ЗАТВОРИ
                     </button>
                   )}
                 </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Статистика */}
-          {selectedStats && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="font-semibold text-gray-900">
-                  {selectedStats.survey.title}
-                </h3>
-                <button
-                  onClick={() => setSelectedStats(null)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <p className="text-sm text-gray-500 mb-4">
-                Общо гласове: <span className="font-semibold text-gray-900">{selectedStats.totalVotes}</span>
-              </p>
-
-              {/* Обща графика */}
-              <div className="space-y-3 mb-6">
-                {Object.entries(selectedStats.results.total).map(([choice, count]) => {
-                  const percent = selectedStats.totalVotes > 0
-                    ? Math.round((count / selectedStats.totalVotes) * 100)
-                    : 0;
-                  return (
-                    <div key={choice}>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="font-medium">{choice}</span>
-                        <span className="text-gray-500">{percent}% ({count})</span>
-                      </div>
-                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-blue-500 rounded-full"
-                          style={{ width: `${percent}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Разбивка по ниво */}
-              <div className="border-t pt-4">
-                <p className="text-xs font-medium text-gray-500 mb-3 uppercase">
-                  По ниво на верификация
-                </p>
-                <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                  <div className="bg-green-50 rounded p-2">
-                    <p className="font-semibold text-green-700">Верифицирани</p>
-                    <p className="text-gray-600 mt-1">
-                      {Object.values(selectedStats.results.verified).reduce((a, b) => a + b, 0)}
-                    </p>
-                  </div>
-                  <div className="bg-yellow-50 rounded p-2">
-                    <p className="font-semibold text-yellow-700">Частични</p>
-                    <p className="text-gray-600 mt-1">
-                      {Object.values(selectedStats.results.partial).reduce((a, b) => a + b, 0)}
-                    </p>
-                  </div>
-                  <div className="bg-gray-50 rounded p-2">
-                    <p className="font-semibold text-gray-700">Анонимни</p>
-                    <p className="text-gray-600 mt-1">
-                      {Object.values(selectedStats.results.anonymous).reduce((a, b) => a + b, 0)}
-                    </p>
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
-          )}
-        </div>
-      </div>
-    </main>
+          </div>
+        )}
+      </main>
+    </div>
   );
 }
