@@ -51,6 +51,8 @@ CREATE TABLE used_hashes (
 CREATE INDEX idx_votes_survey_id    ON votes(survey_id);
 CREATE INDEX idx_votes_trust_level  ON votes(survey_id, trust_level);
 CREATE INDEX idx_used_hashes_lookup ON used_hashes(hash, survey_id);
+CREATE INDEX idx_articles_status ON articles(status);
+CREATE INDEX idx_articles_survey_id ON articles(survey_id);
 
 -- ─── Примерни данни за разработка ─────────────────────────
 INSERT INTO surveys (title, description, event_date, closes_at)
@@ -59,6 +61,17 @@ VALUES (
     'Това е примерно проучване за тестване на платформата.',
     NOW(),
     NOW() + INTERVAL '7 days'
+);
+
+CREATE TABLE articles (
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title       VARCHAR(500) NOT NULL,
+    content     TEXT NOT NULL,
+    summary     VARCHAR(1000),
+    status      VARCHAR(20) DEFAULT 'draft' CHECK (status IN ('draft', 'published')),
+    survey_id   UUID REFERENCES surveys(id),
+    created_at  TIMESTAMP DEFAULT NOW(),
+    published_at TIMESTAMP
 );
 
 -- ─── Admin потребители ────────────────────────────────────

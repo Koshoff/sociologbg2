@@ -28,6 +28,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -45,6 +46,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,  "/api/surveys/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/votes/**").permitAll()
                         .requestMatchers(HttpMethod.GET,  "/api/votes/**").permitAll()
+                        
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         // Admin login е публичен
@@ -52,6 +54,9 @@ public class SecurityConfig {
 
                         // Всички останали admin endpoints изискват ROLE_ADMIN
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/articles/admin/**").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.GET, "/api/articles/**").permitAll()
 
                         .anyRequest().denyAll()
                 )

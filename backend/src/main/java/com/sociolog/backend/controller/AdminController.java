@@ -58,6 +58,7 @@ public class AdminController {
      * Връща ВСИЧКИ проучвания — активни и неактивни.
      * За разлика от публичния endpoint който връща само активни.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/surveys")
     public ResponseEntity<List<SurveyResponse>> getAllSurveys() {
         List<SurveyResponse> surveys = surveyService.getAll()
@@ -71,6 +72,7 @@ public class AdminController {
      * POST /api/admin/surveys
      * Създава ново проучване.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/surveys")
     public ResponseEntity<SurveyResponse> createSurvey(
             @Valid @RequestBody SurveyRequest request) {
@@ -97,6 +99,7 @@ public class AdminController {
      * PUT /api/admin/surveys/{id}/close
      * Затваря проучване — вече не приема гласове.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/surveys/{id}/close")
     public ResponseEntity<?> closeSurvey(@PathVariable UUID id) {
         surveyService.close(id);
@@ -110,6 +113,7 @@ public class AdminController {
      * GET /api/admin/surveys/{id}/stats
      * Връща детайлна статистика за проучване.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/surveys/{id}/stats")
     public ResponseEntity<?> getStats(@PathVariable UUID id) {
         SurveyResponse survey = SurveyResponse.from(surveyService.getById(id));
@@ -137,15 +141,4 @@ public class AdminController {
         return sb.toString();
     }
 
-
-    /**
-     * Временен endpoint само за генериране на bcrypt хеш.
-     * ИЗТРИЙ го след употреба!
-     */
-    @GetMapping("/generate-hash")
-    public ResponseEntity<?> generateHash() {
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        String hash = encoder.encode("admin123");
-        return ResponseEntity.ok(Map.of("hash", hash));
-    }
 }
