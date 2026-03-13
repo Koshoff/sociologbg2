@@ -44,11 +44,6 @@ public class AdminService {
 
 
 
-
-        log.debug("Admin found: {}", admin.getUsername());
-        log.debug("Stored hash: {}", admin.getPassword());
-        log.debug("Password matches: {}", passwordEncoder.matches(password, admin.getPassword()));
-
         // Проверяваме паролата срещу хеша в базата
         // BCrypt сравнява "admin123" с "$2a$10$N9qo..."
         if (!passwordEncoder.matches(password, admin.getPassword())) {
