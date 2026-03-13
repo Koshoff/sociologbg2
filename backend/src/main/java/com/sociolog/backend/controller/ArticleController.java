@@ -1,5 +1,6 @@
 package com.sociolog.backend.controller;
 
+import com.sociolog.backend.dto.ArticleResponse;
 import com.sociolog.backend.entity.Article;
 import com.sociolog.backend.service.ArticleService;
 import lombok.RequiredArgsConstructor;

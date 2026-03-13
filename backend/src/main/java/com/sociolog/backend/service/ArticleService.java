@@ -47,7 +47,7 @@ public class ArticleService {
         survey.setTitle(surveyTitle);
         survey.setDescription(surveyDescription);
         survey.setClosesAt(closesAt);
-        survey.setActive(true);
+        survey.setIsActive(true);
         Survey savedSurvey = surveyRepository.save(survey);
 
         article.setSurvey(savedSurvey);
