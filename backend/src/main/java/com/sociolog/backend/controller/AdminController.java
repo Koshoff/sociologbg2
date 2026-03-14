@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static com.sociolog.backend.util.HashUtil.generateSalt;
+
 /**
  * Admin контролерът обслужва само автентикирани admin потребители.
  * Spring Security проверява JWT токена преди всяка заявка.
@@ -127,18 +129,6 @@ public class AdminController {
         ));
     }
 
-    /**
-     * Генерира случаен 64-символен hex стринг за salt.
-     * Използваме Java вградения SecureRandom.
-     */
-    private String generateSalt() {
-        byte[] bytes = new byte[32];
-        new java.security.SecureRandom().nextBytes(bytes);
-        StringBuilder sb = new StringBuilder();
-        for (byte b : bytes) {
-            sb.append(String.format("%02x", b));
-        }
-        return sb.toString();
-    }
+
 
 }

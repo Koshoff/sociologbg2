@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import static com.sociolog.backend.util.HashUtil.generateSalt;
+
 @Service
 @RequiredArgsConstructor
 public class ArticleService {
@@ -48,6 +50,7 @@ public class ArticleService {
         survey.setDescription(surveyDescription);
         survey.setClosesAt(closesAt);
         survey.setIsActive(true);
+        survey.setSalt(generateSalt());
         Survey savedSurvey = surveyRepository.save(survey);
 
         article.setSurvey(savedSurvey);

@@ -66,4 +66,18 @@ public class HashUtil {
         }
         return hex.toString();
     }
+
+    /**
+     * Генерира случаен 64-символен hex стринг за salt.
+     * Използваме Java вградения SecureRandom.
+     */
+    public static String generateSalt() {
+        byte[] bytes = new byte[32];
+        new java.security.SecureRandom().nextBytes(bytes);
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
+    }
 }
