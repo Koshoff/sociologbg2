@@ -158,11 +158,7 @@ export default function NewsPage() {
                 </Link>
               ))}
 
-              {/* Реклама placeholder */}
-              <div className="border-2 border-dashed border-gray-200 p-6">
-                <p className="text-xs font-bold text-gray-300 tracking-widest uppercase text-center mb-3">Реклама</p>
-                <div className="h-32 bg-gray-50 border border-gray-100" />
-              </div>
+              
             </div>
 
             {/* Останалите статии — долу */}
