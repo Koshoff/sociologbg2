@@ -31,7 +31,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       VOTE_HASH_PEPPER: ${VOTE_HASH_PEPPER}
     ports:
-      - "8080"
+      - "8080:8080"
     depends_on:
       - db
     networks:
@@ -51,7 +51,7 @@ services:
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
     ports:
-      - "3000"
+      - "3000:3000"
     depends_on:
       - backend
     networks:
