@@ -125,7 +125,7 @@ export default function NewsPage() {
             
 
             {/* Дясна колона */}
-            <div className="col-span-12 lg:col-span-4 space-y-4 border-4 border-red-500">
+            <div className="col-span-12 lg:col-span-4 space-y-4">
 
               {/* Последни статии */}
               {rest.slice(0, 3).map((article, index) => (
