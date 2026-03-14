@@ -125,7 +125,7 @@ export default function NewsPage() {
             
 
             {/* Дясна колона */}
-            <div className="col-span-12 lg:col-span-4 space-y-4">
+            <div className="col-span-12 lg:col-span-4 space-y-4 border-4 border-red-500">
 
               {/* Последни статии */}
               {rest.slice(0, 3).map((article, index) => (
@@ -204,12 +204,7 @@ export default function NewsPage() {
           </div>
         )}
 
-        {!loading && featured && (
-  <div>
-    <p>Featured: {featured.title}</p>
-    <p>Rest count: {rest.length}</p>
-  </div>
-)}
+        
       </main>
 
       <footer className="border-t-2 border-gray-900 py-8 mt-8">
