@@ -26,7 +26,10 @@ export default function NewsPage() {
   useEffect(() => {
     fetch(`${API_URL}/api/articles`)
       .then(res => res.json())
-      .then(setArticles)
+      .then(data => {
+        console.log('Articles:', data);
+        setArticles(data);
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
     setTimeout(() => setVisible(true), 100);
