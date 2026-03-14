@@ -22,7 +22,7 @@ public class ArticleController {
     private final AnthropicService anthropicService;
 
     // Публични endpoints
-    @GetMapping
+@GetMapping
 public ResponseEntity<List<ArticleResponse>> getPublished() {
     return ResponseEntity.ok(articleService.getPublished()
         .stream().map(ArticleResponse::from).toList());
