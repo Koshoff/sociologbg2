@@ -26,10 +26,7 @@ export default function NewsPage() {
   useEffect(() => {
     fetch(`${API_URL}/api/articles`)
       .then(res => res.json())
-      .then(data => {
-        console.log('Articles:', data);
-        setArticles(data);
-      })
+      .then(setArticles)
       .catch(() => {})
       .finally(() => setLoading(false));
     setTimeout(() => setVisible(true), 100);
@@ -125,6 +122,7 @@ export default function NewsPage() {
                 </div>
               </Link>
             </div>
+            
 
             {/* Дясна колона */}
             <div className="col-span-12 lg:col-span-4 space-y-4">
@@ -205,6 +203,13 @@ export default function NewsPage() {
             )}
           </div>
         )}
+
+        {!loading && featured && (
+  <div>
+    <p>Featured: {featured.title}</p>
+    <p>Rest count: {rest.length}</p>
+  </div>
+)}
       </main>
 
       <footer className="border-t-2 border-gray-900 py-8 mt-8">
