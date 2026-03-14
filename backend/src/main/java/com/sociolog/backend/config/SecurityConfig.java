@@ -56,6 +56,8 @@ public class SecurityConfig {
                         // Всички останали admin endpoints изискват ROLE_ADMIN
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/articles/admin/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/articles/admin/generate").hasRole("ADMIN")
+
 
                         .requestMatchers(HttpMethod.GET, "/api/articles/**").permitAll()
 
