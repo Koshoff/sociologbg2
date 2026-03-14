@@ -111,54 +111,29 @@ export default function AdminDashboard() {
   };
 
   const generateArticle = async () => {
-    if (!topic) return;
-    setGenerating(true);
-    setError(null);
-    try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          system: `Ти си журналист който пише за българска новинарска платформа. 
-Пиши на български език. Статиите трябва да са обективни, достоверни и балансирани.
-Отговаряй САМО с JSON в следния формат без никакъв друг текст:
-{
-  "title": "заглавие на статията",
-  "content": "съдържание на статията (3-4 параграфа)",
-  "summary": "кратко резюме (1-2 изречения)",
-  "surveyQuestion": "въпрос за анкета свързан с темата"
-}`,
-          messages: [{ role: 'user', content: `Напиши новинарска статия по темата: ${topic}` }],
-        }),
-      });
-      const data = await response.json();
-      const text = data.content[0].text;
-      const parsed = JSON.parse(text);
+  if (!topic) return;
+  setGenerating(true);
+  setError(null);
+  try {
+    const res = await authFetch(`${API_URL}/api/articles/admin/generate`, {
+      method: 'POST',
+      body: JSON.stringify({ topic }),
+    });
+    const data = await res.json();
 
-      const res = await authFetch(`${API_URL}/api/articles/admin/create`, {
-        method: 'POST',
-        body: JSON.stringify({
-          title: parsed.title,
-          content: parsed.content,
-          summary: parsed.summary,
-        }),
-      });
-      const article = await res.json();
-      setGeneratedArticle(article);
-      setEditTitle(article.title);
-      setEditContent(article.content);
-      setEditSummary(article.summary);
-      setPublishSurveyTitle(parsed.surveyQuestion);
-      setTopic('');
-      setShowGenerateForm(false);
-    } catch {
-      setError('Грешка при генериране. Опитайте отново.');
-    } finally {
-      setGenerating(false);
-    }
-  };
+    setGeneratedArticle(data.article);
+    setEditTitle(data.article.title);
+    setEditContent(data.article.content);
+    setEditSummary(data.article.summary);
+    setPublishSurveyTitle(data.surveyQuestion);
+    setTopic('');
+    setShowGenerateForm(false);
+  } catch {
+    setError('Грешка при генериране. Опитайте отново.');
+  } finally {
+    setGenerating(false);
+  }
+};
 
   const saveEdits = async () => {
     if (!generatedArticle) return;

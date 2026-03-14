@@ -30,6 +30,8 @@ app:
     hash-pepper: ${VOTE_HASH_PEPPER}
   cors:
     allowed-origins: http://localhost:3000
+  anthropic:
+    api-key: ${ANTHROPIC_API_KEY}  
 
 # ─── Logging ──────────────────────────────────────────────
 logging:
