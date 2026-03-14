@@ -4,10 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1d8af004-cc82-42ee-bd9c-aa3222c4aa7b" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/sociolog/backend/controller/ArticleController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/sociolog/backend/controller/ArticleController.java" afterDir="false" />
-    </list>
+    <list default="true" id="1d8af004-cc82-42ee-bd9c-aa3222c4aa7b" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
