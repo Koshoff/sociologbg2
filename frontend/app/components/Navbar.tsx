@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation';
 const navLinks = [
   { href: '/', label: 'НАЧАЛО' },
   { href: '/archive', label: 'АРХИВ' },
-  { href: '/articles', label: 'НОВИНИ' },
+  { href: '/news', label: 'НОВИНИ' },
 ];
 
 export default function Navbar() {
