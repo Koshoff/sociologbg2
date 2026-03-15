@@ -77,7 +77,7 @@ export default function NewsPage() {
         )}
 
         {!loading && featured && (
-          <div className="grid grid-cols-12 gap-6 items-start">
+          <div className="grid grid-cols-12 gap-6 items-stretch">
 
             {/* Featured статия */}
             <div className="col-span-12 lg:col-span-8">
