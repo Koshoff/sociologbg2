@@ -128,7 +128,7 @@ export default function NewsPage() {
             <div className="col-span-12 lg:col-span-4 flex flex-col gap-4">
 
               {/* Последни статии */}
-              {rest.slice(0, 3).map((article, index) => (
+              {rest.slice(0, 2).map((article, index) => (
                 <Link key={article.id} href={`/news/${article.id}`}>
                   <div
                     className={`border-2 border-gray-900 p-5 cursor-pointer transition-all duration-150 ${
