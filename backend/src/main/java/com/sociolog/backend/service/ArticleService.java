@@ -32,11 +32,15 @@ public class ArticleService {
                 .orElseThrow(() -> new RuntimeException("Article not found"));
     }
 
-    public Article create(String title, String content, String summary) {
+    public Article create(String title, String content, String summary, String slug, String metaTitle, String metaDescription, String sources) {
         Article article = new Article();
         article.setTitle(title);
         article.setContent(content);
         article.setSummary(summary);
+        article.setSlug(slug);
+        article.setMetaTitle(metaTitle);
+        article.setMetaDescription(metaDescription);
+        article.setSources(sources);
         article.setStatus("draft");
         return articleRepository.save(article);
     }
@@ -59,11 +63,15 @@ public class ArticleService {
         return articleRepository.save(article);
     }
 
-    public Article update(UUID id, String title, String content, String summary) {
+    public Article update(UUID id, String title, String content, String summary, String slug, String metaTitle, String metaDescription, String sources) {
         Article article = getById(id);
         article.setTitle(title);
         article.setContent(content);
         article.setSummary(summary);
+        article.setSlug(slug);
+        article.setMetaTitle(metaTitle);
+        article.setMetaDescription(metaDescription);
+        article.setSources(sources);
         return articleRepository.save(article);
     }
 }

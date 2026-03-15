@@ -42,29 +42,35 @@ public ResponseEntity<List<ArticleResponse>> getAll() {
 }
 
 
-@PreAuthorize("hasRole('ADMIN')")
-@PostMapping("/admin/create")
-public ResponseEntity<ArticleResponse> create(@RequestBody Map<String, String> body) {
-    Article article = articleService.create(
-        body.get("title"),
-        body.get("content"),
-        body.get("summary")
-    );
-    return ResponseEntity.ok(ArticleResponse.from(article));
-}
+    @PostMapping("/admin/create")
+    public ResponseEntity<ArticleResponse> create(@RequestBody Map<String, String> body) {
+        Article article = articleService.create(
+                body.get("title"),
+                body.get("content"),
+                body.get("summary"),
+                body.get("slug"),
+                body.get("metaTitle"),
+                body.get("metaDescription"),
+                body.get("sources")
+        );
+        return ResponseEntity.ok(ArticleResponse.from(article));
+    }
 
 
-@PreAuthorize("hasRole('ADMIN')")
-@PutMapping("/admin/{id}/update")
-public ResponseEntity<ArticleResponse> update(@PathVariable UUID id, @RequestBody Map<String, String> body) {
-    Article article = articleService.update(
-        id,
-        body.get("title"),
-        body.get("content"),
-        body.get("summary")
-    );
-    return ResponseEntity.ok(ArticleResponse.from(article));
-}
+    @PutMapping("/admin/{id}/update")
+    public ResponseEntity<ArticleResponse> update(@PathVariable UUID id, @RequestBody Map<String, String> body) {
+        Article article = articleService.update(
+                id,
+                body.get("title"),
+                body.get("content"),
+                body.get("summary"),
+                body.get("slug"),
+                body.get("metaTitle"),
+                body.get("metaDescription"),
+                body.get("sources")
+        );
+        return ResponseEntity.ok(ArticleResponse.from(article));
+    }
 
 @PreAuthorize("hasRole('ADMIN')")
 @PostMapping("/admin/{id}/publish")
@@ -90,7 +96,11 @@ public ResponseEntity<ArticleResponse> publish(@PathVariable UUID id, @RequestBo
             Article article = articleService.create(
                     parsed.get("title"),
                     parsed.get("content"),
-                    parsed.get("summary")
+                    parsed.get("summary"),
+                    parsed.get("slug"),
+                    parsed.get("metaTitle"),
+                    parsed.get("metaDescription"),
+                    parsed.get("sources")
             );
 
             Map<String, Object> result = new java.util.HashMap<>();

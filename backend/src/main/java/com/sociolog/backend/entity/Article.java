@@ -24,6 +24,18 @@ public class Article {
     @Column(length = 1000)
     private String summary;
 
+    @Column(unique = true)
+    private String slug;
+
+    @Column(name = "meta_title")
+    private String metaTitle;
+
+    @Column(name = "meta_description", length = 1000)
+    private String metaDescription;
+
+    @Column(columnDefinition = "TEXT")
+    private String sources;
+
     @Column(nullable = false)
     private String status = "draft";
 
