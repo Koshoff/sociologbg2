@@ -77,7 +77,7 @@ export default function NewsPage() {
         )}
 
         {!loading && featured && (
-          <div className="grid grid-cols-12 gap-6">
+          <div className="grid grid-cols-12 gap-6 items-start">
 
             {/* Featured статия */}
             <div className="col-span-12 lg:col-span-8">
@@ -125,7 +125,7 @@ export default function NewsPage() {
             
 
             {/* Дясна колона */}
-            <div className="col-span-12 lg:col-span-4 space-y-4">
+            <div className="col-span-12 lg:col-span-4 flex flex-col gap-4">
 
               {/* Последни статии */}
               {rest.slice(0, 3).map((article, index) => (
