@@ -91,29 +91,7 @@ export default function SurveyPage() {
             </div>
             <span className="font-black text-gray-900 text-lg tracking-tight">СОЦИОЛОГ.BG</span>
           </div>
-          <nav className="flex items-center gap-1">
-            {[
-              { href: '/', label: 'НАЧАЛО' },
-              { href: '/archive', label: 'АРХИВ' },
-              { href: '/analyses', label: 'АНАЛИЗИ' },
-            ].map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="px-4 py-2 text-sm font-bold text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-150"
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translate(-2px, 2px)';
-                  e.currentTarget.style.boxShadow = '3px -3px 0px rgba(0,0,0,0.2)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translate(0, 0)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+          <Navbar />
         </div>
       </header>
 
