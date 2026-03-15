@@ -19,6 +19,10 @@ interface Article {
   title: string;
   content: string;
   summary: string;
+  slug: string | null;
+  metaTitle: string | null;
+  metaDescription: string | null;
+  sources: string | null;
   status: string;
   surveyId: string | null;
   surveyTitle: string | null;
@@ -41,6 +45,12 @@ export default function AdminDashboard() {
   const [surveyTitle, setSurveyTitle] = useState('');
   const [surveyDescription, setSurveyDescription] = useState('');
   const [surveyClosesAt, setSurveyClosesAt] = useState('');
+
+  // SEO оптимизация
+  const [editSlug, setEditSlug] = useState('');
+  const [editMetaTitle, setEditMetaTitle] = useState('');
+  const [editMetaDescription, setEditMetaDescription] = useState('');
+  const [editSources, setEditSources] = useState('');
 
   // AI генериране
   const [showGenerateForm, setShowGenerateForm] = useState(false);
@@ -126,6 +136,10 @@ export default function AdminDashboard() {
     setEditContent(data.article.content);
     setEditSummary(data.article.summary);
     setPublishSurveyTitle(data.surveyQuestion);
+    setEditSlug(data.article.slug || '');
+    setEditMetaTitle(data.article.metaTitle || '');
+    setEditMetaDescription(data.article.metaDescription || '');
+    setEditSources(data.article.sources || '');
     setTopic('');
     setShowGenerateForm(false);
   } catch {
@@ -139,7 +153,14 @@ export default function AdminDashboard() {
     if (!generatedArticle) return;
     await authFetch(`${API_URL}/api/articles/admin/${generatedArticle.id}/update`, {
       method: 'PUT',
-      body: JSON.stringify({ title: editTitle, content: editContent, summary: editSummary }),
+      body: JSON.stringify({ 
+            title: editTitle, 
+            content: editContent, 
+            summary: editSummary,
+            slug: editSlug,
+            metaTitle: editMetaTitle,
+            metaDescription: editMetaDescription,
+            sources: editSources }),
     });
     setGeneratedArticle({ ...generatedArticle, title: editTitle, content: editContent, summary: editSummary });
   };
@@ -301,6 +322,67 @@ export default function AdminDashboard() {
                       value={editContent}
                       onChange={(e) => setEditContent(e.target.value)}
                       rows={10}
+                      className="w-full border-2 border-gray-900 px-4 py-3 text-sm font-bold focus:outline-none focus:border-blue-600"
+                    />
+                  </div>
+
+                  {/* SEO секция */}
+                  <div className="border-t-2 border-gray-900 pt-4 mt-4">
+                    <p className="text-xs font-black text-gray-900 tracking-widest uppercase mb-4">
+                      SEO настройки
+                    </p>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-xs font-black text-gray-400 tracking-widest uppercase block mb-1">
+                          Slug <span className="text-gray-300">(URL)</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={editSlug}
+                          onChange={(e) => setEditSlug(e.target.value)}
+                          placeholder="url-friendly-slug"
+                          className="w-full border-2 border-gray-900 px-4 py-3 text-sm font-bold focus:outline-none focus:border-blue-600"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-black text-gray-400 tracking-widest uppercase block mb-1">
+                          Meta Title <span className="text-gray-300">(до 60 символа)</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={editMetaTitle}
+                          onChange={(e) => setEditMetaTitle(e.target.value)}
+                          maxLength={60}
+                          className="w-full border-2 border-gray-900 px-4 py-3 text-sm font-bold focus:outline-none focus:border-blue-600"
+                        />
+                        <p className="text-xs text-gray-400 mt-1">{editMetaTitle.length}/60</p>
+                      </div>
+                      <div>
+                        <label className="text-xs font-black text-gray-400 tracking-widest uppercase block mb-1">
+                          Meta Description <span className="text-gray-300">(до 160 символа)</span>
+                        </label>
+                        <textarea
+                          value={editMetaDescription}
+                          onChange={(e) => setEditMetaDescription(e.target.value)}
+                          maxLength={160}
+                          rows={3}
+                          className="w-full border-2 border-gray-900 px-4 py-3 text-sm font-bold focus:outline-none focus:border-blue-600"
+                        />
+                        <p className="text-xs text-gray-400 mt-1">{editMetaDescription.length}/160</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Източници */}
+                  <div className="border-t-2 border-gray-900 pt-4 mt-4">
+                    <p className="text-xs font-black text-gray-900 tracking-widest uppercase mb-4">
+                      Източници
+                    </p>
+                    <textarea
+                      value={editSources}
+                      onChange={(e) => setEditSources(e.target.value)}
+                      rows={4}
+                      placeholder="Един източник на ред..."
                       className="w-full border-2 border-gray-900 px-4 py-3 text-sm font-bold focus:outline-none focus:border-blue-600"
                     />
                   </div>
