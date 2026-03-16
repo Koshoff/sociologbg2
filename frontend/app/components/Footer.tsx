@@ -21,12 +21,7 @@ export default function Footer() {
 
           {/* Лого и описание */}
           <div className="col-span-12 lg:col-span-4">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-slate-900 flex items-center justify-center">
-                <span className="text-white font-black text-sm">С</span>
-              </div>
-              <span className="font-black text-gray-900 text-lg tracking-tight">СОЦИОЛОГ.BG</span>
-            </div>
+            <img src="/logo.png" alt="Социолог.bg" className="h-10 w-auto" />
             <p className="text-sm text-gray-500 font-bold leading-relaxed mb-4">
               Независима платформа за анонимни граждански проучвания и актуални новини. Твоят глас има значение.
             </p>
