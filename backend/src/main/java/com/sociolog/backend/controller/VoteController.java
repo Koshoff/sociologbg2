@@ -24,6 +24,12 @@ public class VoteController {
      * POST /api/votes/{surveyId}
      * Подава глас за дадено проучване.
      */
+
+    @GetMapping("/top-surveys")
+    public ResponseEntity<?> getTopSurveys() {
+        return ResponseEntity.ok(voteService.getTopSurveys(3));
+    }
+
     @PostMapping("/{surveyId}")
     public ResponseEntity<?> castVote(
             @PathVariable UUID surveyId,
@@ -66,4 +72,6 @@ public class VoteController {
     public ResponseEntity<?> getTotalVotes() {
         return ResponseEntity.ok(Map.of("total", voteService.getTotalVotesAll()));
     }
+
+
 }

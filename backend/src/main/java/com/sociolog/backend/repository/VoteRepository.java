@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Repository
@@ -27,6 +28,18 @@ public interface VoteRepository extends JpaRepository<Vote, UUID> {
         ORDER BY v.trustLevel DESC, v.choice ASC
     """)
     List<Object[]> countVotesBySurveyGrouped(@Param("surveyId") UUID surveyId);
+
+
+    @Query(value = """
+    SELECT s.id, s.title, COUNT(v.id) as vote_count
+    FROM surveys s
+    LEFT JOIN votes v ON v.survey_id = s.id
+    WHERE s.is_active = true
+    GROUP BY s.id, s.title
+    ORDER BY vote_count DESC
+    LIMIT :limit
+    """, nativeQuery = true)
+    List<Map<String, Object>> findTopSurveysByVoteCount(@Param("limit") int limit);
 
     /**
      * Общ брой гласове за проучване по ниво на доверие.

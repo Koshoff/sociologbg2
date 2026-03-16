@@ -5,7 +5,22 @@ import Link from 'next/link';
 import { getSurveys, Survey } from '@/lib/api';
 import Navbar from '@/app/components/Navbar';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 const SURVEYS_PER_PAGE = 3;
+
+interface TopSurvey {
+  id: string;
+  title: string;
+  vote_count: number;
+}
+
+interface Article {
+  id: string;
+  title: string;
+  summary: string;
+  publishedAt: string | null;
+  createdAt: string;
+}
 
 export default function HomePage() {
   const [surveys, setSurveys] = useState<Survey[]>([]);
@@ -13,16 +28,30 @@ export default function HomePage() {
   const [visible, setVisible] = useState(false);
   const [totalVotes, setTotalVotes] = useState<number>(0);
   const [page, setPage] = useState(0);
+  const [topSurveys, setTopSurveys] = useState<TopSurvey[]>([]);
+  const [latestNews, setLatestNews] = useState<Article[]>([]);
 
   useEffect(() => {
     getSurveys()
       .then(setSurveys)
       .catch(() => {})
       .finally(() => setLoading(false));
+
     setTimeout(() => setVisible(true), 100);
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/votes/total`)
+
+    fetch(`${API_URL}/api/votes/total`)
       .then(res => res.json())
       .then(data => setTotalVotes(data.total))
+      .catch(() => {});
+
+    fetch(`${API_URL}/api/votes/top-surveys`)
+      .then(res => res.json())
+      .then(setTopSurveys)
+      .catch(() => {});
+
+    fetch(`${API_URL}/api/articles`)
+      .then(res => res.json())
+      .then(data => setLatestNews(data.slice(0, 3)))
       .catch(() => {});
   }, []);
 
@@ -73,8 +102,36 @@ export default function HomePage() {
         <div className="grid grid-cols-12 gap-6 items-start">
 
           {/* Лява колона — sticky */}
-          <aside className="col-span-3 hidden lg:block sticky top-24">
-            <div className="border-2 border-gray-900 p-5 mb-4">
+          <aside className="col-span-3 hidden lg:block sticky top-24 space-y-4">
+
+            {/* Топ анкети */}
+            <div className="border-2 border-gray-900 p-5">
+              <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-4">
+                Топ проучвания
+              </p>
+              {topSurveys.length > 0 ? (
+                <div className="space-y-3">
+                  {topSurveys.map((s, i) => (
+                    <Link key={s.id} href={`/surveys/${s.id}`}>
+                      <div className="flex items-start gap-3 py-2 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors cursor-pointer">
+                        <span className="text-2xl font-black text-gray-200 leading-none w-6 flex-shrink-0">
+                          {i + 1}
+                        </span>
+                        <div>
+                          <p className="text-xs font-black text-gray-900 leading-tight">{s.title}</p>
+                          <p className="text-xs font-bold text-blue-600 mt-1">{Number(s.vote_count)} гласа</p>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Няма данни</p>
+              )}
+            </div>
+
+            {/* Статистика */}
+            <div className="border-2 border-gray-900 p-5">
               <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-4">
                 Статистика
               </p>
@@ -94,6 +151,7 @@ export default function HomePage() {
               </div>
             </div>
 
+            {/* Реклама */}
             <div className="border-2 border-dashed border-gray-200 p-5">
               <p className="text-xs font-bold text-gray-300 tracking-widest uppercase text-center mb-3">Реклама</p>
               <div className="h-48 bg-gray-50 border border-gray-100" />
@@ -214,23 +272,52 @@ export default function HomePage() {
           </section>
 
           {/* Дясна колона — sticky */}
-          <aside className="col-span-3 hidden lg:block sticky top-24">
-            <div className="border-2 border-gray-900 p-5 mb-4">
-              <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-4">
-                Последни резултати
-              </p>
-              <Link href="/archive" className="block">
-                <div className="py-2 border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Виж архива →</p>
+          <aside className="col-span-3 hidden lg:block sticky top-24 space-y-4">
+
+            {/* Последни новини */}
+            <div className="border-2 border-gray-900 p-5">
+              <div className="flex justify-between items-center border-b-2 border-gray-900 pb-2 mb-4">
+                <p className="text-xs font-black text-gray-900 tracking-widest uppercase">
+                  Последни новини
+                </p>
+                <Link href="/news" className="text-xs font-bold text-blue-600 hover:text-blue-800 uppercase tracking-wider">
+                  Всички →
+                </Link>
+              </div>
+              {latestNews.length > 0 ? (
+                <div className="space-y-3">
+                  {latestNews.map((article) => (
+                    <Link key={article.id} href={`/news/${article.id}`}>
+                      <div className="py-2 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors cursor-pointer">
+                        <p className="text-xs font-black text-gray-900 leading-tight mb-1">{article.title}</p>
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                          {new Date(article.publishedAt || article.createdAt).toLocaleDateString('bg-BG')}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
                 </div>
-              </Link>
-              <Link href="/news" className="block mt-2">
-                <div className="py-2 hover:bg-gray-50 transition-colors">
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Последни новини →</p>
-                </div>
-              </Link>
+              ) : (
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Няма новини</p>
+              )}
             </div>
 
+            {/* Архив */}
+            <div className="border-2 border-gray-900 p-5">
+              <div className="flex justify-between items-center border-b-2 border-gray-900 pb-2 mb-4">
+                <p className="text-xs font-black text-gray-900 tracking-widest uppercase">
+                  Архив
+                </p>
+                <Link href="/archive" className="text-xs font-bold text-blue-600 hover:text-blue-800 uppercase tracking-wider">
+                  Виж →
+                </Link>
+              </div>
+              <p className="text-xs font-bold text-gray-500 leading-relaxed">
+                Разгледай приключилите проучвания и техните финални резултати.
+              </p>
+            </div>
+
+            {/* Реклама */}
             <div className="border-2 border-dashed border-gray-200 p-5">
               <p className="text-xs font-bold text-gray-300 tracking-widest uppercase text-center mb-3">Реклама</p>
               <div className="h-48 bg-gray-50 border border-gray-100" />

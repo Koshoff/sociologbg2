@@ -122,6 +122,10 @@ public class VoteService {
         return results;
     }
 
+    public List<Map<String, Object>> getTopSurveys(int limit) {
+        return voteRepository.findTopSurveysByVoteCount(limit);
+    }
+
     public long getTotalVotes(UUID surveyId) {
         return voteRepository.countBySurveyId(surveyId);
     }
