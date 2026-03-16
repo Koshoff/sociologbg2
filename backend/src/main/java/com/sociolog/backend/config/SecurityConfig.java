@@ -48,7 +48,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/votes/**").permitAll()
                         .requestMatchers(HttpMethod.GET,  "/api/votes/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/votes/top-surveys").permitAll()
-                        
+                        .requestMatchers(HttpMethod.GET, "/api/articles/with-active-surveys").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         // Admin login е публичен

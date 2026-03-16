@@ -18,15 +18,30 @@ interface Article {
   publishedAt: string | null;
 }
 
+interface ArchivedSurvey {
+  survey: { id: string; title: string; closesAt: string; };
+  totalVotes: number;
+  results: { total: Record<string, number>; };
+}
+
 export default function NewsPage() {
   const [articles, setArticles] = useState<Article[]>([]);
+  const [articlesWithSurveys, setArticlesWithSurveys] = useState<Article[]>([]);
+  const [archivedTop, setArchivedTop] = useState<ArchivedSurvey[]>([]);
   const [loading, setLoading] = useState(true);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/articles`)
-      .then(res => res.json())
-      .then(setArticles)
+    Promise.all([
+      fetch(`${API_URL}/api/articles`).then(r => r.json()),
+      fetch(`${API_URL}/api/articles/with-active-surveys`).then(r => r.json()),
+      fetch(`${API_URL}/api/surveys/archived`).then(r => r.json()),
+    ])
+      .then(([arts, withSurveys, archived]) => {
+        setArticles(arts);
+        setArticlesWithSurveys(withSurveys.slice(0, 3));
+        setArchivedTop(archived.slice(0, 3));
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
     setTimeout(() => setVisible(true), 100);
@@ -61,9 +76,12 @@ export default function NewsPage() {
       <main className="max-w-7xl mx-auto px-6 py-12">
         {loading && (
           <div className="grid grid-cols-12 gap-6">
-            <div className="col-span-12 lg:col-span-8 h-96 bg-gray-50 animate-pulse border border-gray-100" />
-            <div className="col-span-12 lg:col-span-4 space-y-4">
-              {[1,2,3].map(i => <div key={i} className="h-28 bg-gray-50 animate-pulse border border-gray-100" />)}
+            <div className="col-span-3 space-y-4 hidden lg:block">
+              {[1,2].map(i => <div key={i} className="h-40 bg-gray-50 animate-pulse border border-gray-100" />)}
+            </div>
+            <div className="col-span-12 lg:col-span-6 h-96 bg-gray-50 animate-pulse border border-gray-100" />
+            <div className="col-span-3 space-y-4 hidden lg:block">
+              {[1,2].map(i => <div key={i} className="h-40 bg-gray-50 animate-pulse border border-gray-100" />)}
             </div>
           </div>
         )}
@@ -77,13 +95,70 @@ export default function NewsPage() {
         )}
 
         {!loading && featured && (
-          <div className="grid grid-cols-12 gap-6 items-stretch">
+          <div className="grid grid-cols-12 gap-6 items-start">
 
-            {/* Featured статия */}
-            <div className="col-span-12 lg:col-span-8">
+            {/* Лява колона — sticky */}
+            <aside className="col-span-3 hidden lg:block sticky top-24 space-y-4">
+
+              {/* Анкети свързани с новини */}
+              <div className="border-2 border-gray-900 p-5">
+                <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-4">
+                  Гласувай сега
+                </p>
+                {articlesWithSurveys.length > 0 ? (
+                  <div className="space-y-3">
+                    {articlesWithSurveys.map((article) => (
+                      <div key={article.id} className="py-2 border-b border-gray-100 last:border-0">
+                        <p className="text-xs font-black text-gray-900 leading-tight mb-1">{article.surveyTitle}</p>
+                        <div className="flex justify-between items-center mt-2">
+                          <Link href={`/news/${article.id}`}>
+                            <span className="text-xs font-bold text-gray-400 hover:text-gray-900 uppercase tracking-wider transition-colors">
+                              Статия →
+                            </span>
+                          </Link>
+                          <Link href={`/surveys/${article.surveyId}`}>
+                            <span className="text-xs font-black text-blue-600 hover:text-blue-800 uppercase tracking-wider transition-colors">
+                              Гласувай →
+                            </span>
+                          </Link>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Няма активни анкети</p>
+                )}
+              </div>
+
+              {/* За платформата */}
+              <div className="border-2 border-gray-900 p-5">
+                <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-3">
+                  За платформата
+                </p>
+                <p className="text-xs text-gray-500 font-bold leading-relaxed mb-3">
+                  Социолог.bg е независима платформа за анонимни граждански проучвания и новини.
+                </p>
+                <Link href="/">
+                  <span className="text-xs font-black text-blue-600 hover:text-blue-800 uppercase tracking-wider transition-colors">
+                    Виж проучванията →
+                  </span>
+                </Link>
+              </div>
+
+              {/* Реклама */}
+              <div className="border-2 border-dashed border-gray-200 p-5">
+                <p className="text-xs font-bold text-gray-300 tracking-widest uppercase text-center mb-3">Реклама</p>
+                <div className="h-48 bg-gray-50 border border-gray-100" />
+              </div>
+            </aside>
+
+            {/* Централна колона */}
+            <div className="col-span-12 lg:col-span-6 space-y-4">
+
+              {/* Featured */}
               <Link href={`/news/${featured.id}`}>
                 <div
-                  className="border-2 border-gray-900 p-8 h-full cursor-pointer transition-all duration-150"
+                  className="border-2 border-gray-900 p-8 cursor-pointer transition-all duration-150"
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'translate(-3px, 3px)';
                     e.currentTarget.style.boxShadow = '6px -6px 0px rgba(0,0,0,0.15)';
@@ -106,29 +181,20 @@ export default function NewsPage() {
                   <h2 className="text-3xl md:text-4xl font-black text-gray-900 leading-tight mb-4">
                     {featured.title}
                   </h2>
-                  <p className="text-gray-500 text-lg mb-6 leading-relaxed">
-                    {featured.summary}
-                  </p>
+                  <p className="text-gray-500 text-lg mb-6 leading-relaxed">{featured.summary}</p>
                   <div className="flex items-center justify-between border-t-2 border-gray-100 pt-4">
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
                       {new Date(featured.publishedAt || featured.createdAt).toLocaleDateString('bg-BG', {
                         day: 'numeric', month: 'long', year: 'numeric'
                       })}
                     </p>
-                    <span className="text-xs font-black text-blue-600 tracking-wider uppercase">
-                      ПРОЧЕТИ →
-                    </span>
+                    <span className="text-xs font-black text-blue-600 tracking-wider uppercase">ПРОЧЕТИ →</span>
                   </div>
                 </div>
               </Link>
-            </div>
-            
 
-            {/* Дясна колона */}
-            <div className="col-span-12 lg:col-span-4 flex flex-col gap-4">
-
-              {/* Последни статии */}
-              {rest.slice(0, 2).map((article, index) => (
+              {/* Останали статии */}
+              {rest.map((article, index) => (
                 <Link key={article.id} href={`/news/${article.id}`}>
                   <div
                     className={`border-2 border-gray-900 p-5 cursor-pointer transition-all duration-150 ${
@@ -157,50 +223,69 @@ export default function NewsPage() {
                   </div>
                 </Link>
               ))}
-
-              
             </div>
 
-            {/* Останалите статии — долу */}
-            {rest.length > 3 && (
-              <div className="col-span-12 mt-4">
-                <div className="border-b-2 border-gray-900 pb-3 mb-6">
-                  <h2 className="text-sm font-black text-gray-900 tracking-widest uppercase">Още статии</h2>
+            {/* Дясна колона — sticky */}
+            <aside className="col-span-3 hidden lg:block sticky top-24 space-y-4">
+
+              {/* Последни резултати от архива */}
+              <div className="border-2 border-gray-900 p-5">
+                <div className="flex justify-between items-center border-b-2 border-gray-900 pb-2 mb-4">
+                  <p className="text-xs font-black text-gray-900 tracking-widest uppercase">
+                    Последни резултати
+                  </p>
+                  <Link href="/archive">
+                    <span className="text-xs font-bold text-blue-600 hover:text-blue-800 uppercase tracking-wider">Всички →</span>
+                  </Link>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {rest.slice(3).map((article, index) => (
-                    <Link key={article.id} href={`/news/${article.id}`}>
-                      <div
-                        className="border-2 border-gray-900 p-5 cursor-pointer transition-all duration-150"
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.transform = 'translate(-2px, 2px)';
-                          e.currentTarget.style.boxShadow = '4px -4px 0px rgba(0,0,0,0.15)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.transform = 'translate(0, 0)';
-                          e.currentTarget.style.boxShadow = 'none';
-                        }}
-                      >
-                        {article.surveyId && (
-                          <span className="text-xs font-black text-green-600 tracking-widest uppercase mb-2 block">
-                            ● Активна анкета
-                          </span>
-                        )}
-                        <h3 className="font-black text-gray-900 leading-tight mb-2">{article.title}</h3>
-                        <p className="text-xs text-gray-500 mb-3 line-clamp-2">{article.summary}</p>
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                          {new Date(article.publishedAt || article.createdAt).toLocaleDateString('bg-BG')}
-                        </p>
-                      </div>
-                    </Link>
-                  ))}
+                {archivedTop.length > 0 ? (
+                  <div className="space-y-3">
+                    {archivedTop.map(({ survey, totalVotes, results }) => {
+                      const total = results.total || {};
+                      const winner = Object.entries(total).sort(([,a],[,b]) => b - a)[0];
+                      return (
+                        <div key={survey.id} className="py-2 border-b border-gray-100 last:border-0">
+                          <p className="text-xs font-black text-gray-900 leading-tight mb-1">{survey.title}</p>
+                          {winner && (
+                            <p className="text-xs font-bold text-blue-600">
+                              ▲ {winner[0]} — {Math.round((winner[1] / totalVotes) * 100)}%
+                            </p>
+                          )}
+                          <p className="text-xs font-bold text-gray-400 mt-1">{totalVotes} гласа</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Няма архивирани</p>
+                )}
+              </div>
+
+              {/* Статистика */}
+              <div className="border-2 border-gray-900 p-5">
+                <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-4">
+                  Статистика
+                </p>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Статии</span>
+                    <span className="text-lg font-black text-gray-900">{articles.length}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">С анкети</span>
+                    <span className="text-lg font-black text-gray-900">{articlesWithSurveys.length}</span>
+                  </div>
                 </div>
               </div>
-            )}
+
+              {/* Реклама */}
+              <div className="border-2 border-dashed border-gray-200 p-5">
+                <p className="text-xs font-bold text-gray-300 tracking-widest uppercase text-center mb-3">Реклама</p>
+                <div className="h-48 bg-gray-50 border border-gray-100" />
+              </div>
+            </aside>
           </div>
         )}
-
-        
       </main>
 
       <footer className="border-t-2 border-gray-900 py-8 mt-8">

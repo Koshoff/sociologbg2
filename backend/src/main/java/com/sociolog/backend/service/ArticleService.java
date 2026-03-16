@@ -27,6 +27,10 @@ public class ArticleService {
         return articleRepository.findAllByOrderByCreatedAtDesc();
     }
 
+    public List<Article> getWithActiveSurveys() {
+        return articleRepository.findByStatusAndSurveyIsActiveTrue("published");
+    }
+
     public Article getById(UUID id) {
         return articleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Article not found"));
