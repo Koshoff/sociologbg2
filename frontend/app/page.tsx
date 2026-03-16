@@ -5,13 +5,14 @@ import Link from 'next/link';
 import { getSurveys, Survey } from '@/lib/api';
 import Navbar from '@/app/components/Navbar';
 
+const SURVEYS_PER_PAGE = 3;
 
 export default function HomePage() {
   const [surveys, setSurveys] = useState<Survey[]>([]);
   const [loading, setLoading] = useState(true);
   const [visible, setVisible] = useState(false);
   const [totalVotes, setTotalVotes] = useState<number>(0);
-
+  const [page, setPage] = useState(0);
 
   useEffect(() => {
     getSurveys()
@@ -25,20 +26,17 @@ export default function HomePage() {
       .catch(() => {});
   }, []);
 
+  const totalPages = Math.ceil(surveys.length / SURVEYS_PER_PAGE);
+  const paginated = surveys.slice(page * SURVEYS_PER_PAGE, (page + 1) * SURVEYS_PER_PAGE);
+
   return (
     <div className="min-h-screen bg-white font-sans">
-
-      {/* Header */}
       <Navbar />
 
       {/* Hero */}
       <section className="bg-slate-900 pt-28 pb-20 px-6">
         <div className="max-w-7xl mx-auto">
-          <div
-            className={`transition-all duration-700 ${
-              visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-            }`}
-          >
+          <div className={`transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
             <div className="inline-block border border-blue-500 px-3 py-1 mb-6">
               <span className="text-blue-400 text-xs font-bold tracking-widest uppercase">
                 ● {loading ? '...' : `${surveys.length} активни проучвания`}
@@ -55,7 +53,6 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Статистика */}
           <div className="grid grid-cols-3 gap-px bg-gray-700 mt-10 max-w-xl">
             {[
               { label: 'АКТИВНИ', value: surveys.length.toString() },
@@ -71,45 +68,49 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Основно тяло — 3 колони */}
+      {/* Основно тяло */}
       <main className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-12 gap-6">
+        <div className="grid grid-cols-12 gap-6 items-start">
 
-          {/* Лява колона — placeholder */}
-          <aside className="col-span-3 hidden lg:block">
-            <div className="border-2 border-dashed border-gray-200 p-6 mb-4">
-              <p className="text-xs font-bold text-gray-300 tracking-widest uppercase text-center">
-                Топ статистика
+          {/* Лява колона — sticky */}
+          <aside className="col-span-3 hidden lg:block sticky top-24">
+            <div className="border-2 border-gray-900 p-5 mb-4">
+              <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-4">
+                Статистика
               </p>
-              <div className="mt-4 space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-8 bg-gray-50 border border-gray-100" />
-                ))}
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Активни</span>
+                  <span className="text-lg font-black text-gray-900">{surveys.length}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Общо гласове</span>
+                  <span className="text-lg font-black text-gray-900">{totalVotes.toLocaleString('bg-BG')}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Страница</span>
+                  <span className="text-lg font-black text-gray-900">{page + 1}/{totalPages || 1}</span>
+                </div>
               </div>
             </div>
-            <div className="border-2 border-dashed border-gray-200 p-6">
-              <p className="text-xs font-bold text-gray-300 tracking-widest uppercase text-center">
-                Реклама
-              </p>
-              <div className="mt-4 h-40 bg-gray-50 border border-gray-100" />
+
+            <div className="border-2 border-dashed border-gray-200 p-5">
+              <p className="text-xs font-bold text-gray-300 tracking-widest uppercase text-center mb-3">Реклама</p>
+              <div className="h-48 bg-gray-50 border border-gray-100" />
             </div>
           </aside>
 
-          {/* Централна колона — проучвания */}
+          {/* Централна колона */}
           <section className="col-span-12 lg:col-span-6">
             <div className="flex items-center justify-between mb-6 pb-4 border-b-2 border-gray-900">
               <h2 className="text-sm font-black text-gray-900 tracking-widest uppercase">
                 Текущи проучвания
               </h2>
-              <Link
-                href="/archive"
-                className="text-xs font-bold text-gray-400 hover:text-gray-900 tracking-wider uppercase transition-colors"
-              >
+              <Link href="/archive" className="text-xs font-bold text-gray-400 hover:text-gray-900 tracking-wider uppercase transition-colors">
                 Архив →
               </Link>
             </div>
 
-            {/* Зареждане */}
             {loading && (
               <div className="space-y-4">
                 {[1, 2, 3].map((i) => (
@@ -118,93 +119,127 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* Списък */}
             {!loading && (
-              <div className="space-y-4">
-                {surveys.map((survey, index) => (
-                  <div
-                    key={survey.id}
-                    className={`border-2 border-gray-900 p-6 shadow-md transition-all duration-150 ${
-                      visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-                    }`}
-                    style={{ transitionDelay: `${index * 100}ms` }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translate(-3px, 3px)';
-                      e.currentTarget.style.boxShadow = '6px -6px 0px rgba(0,0,0,0.15)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translate(0, 0)';
-                      e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.1)';
-                    }}
-                  >
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="flex-1 mr-4">
-                        <h3 className="font-black text-gray-900 text-lg leading-tight">
-                          {survey.title}
-                        </h3>
-                        {survey.description && (
-                          <p className="text-gray-500 text-sm mt-2">{survey.description}</p>
-                        )}
+              <>
+                <div className="space-y-4">
+                  {paginated.map((survey, index) => (
+                    <div
+                      key={survey.id}
+                      className={`border-2 border-gray-900 p-6 shadow-md transition-all duration-150 ${
+                        visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                      }`}
+                      style={{ transitionDelay: `${index * 100}ms` }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translate(-3px, 3px)';
+                        e.currentTarget.style.boxShadow = '6px -6px 0px rgba(0,0,0,0.15)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translate(0, 0)';
+                        e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.1)';
+                      }}
+                    >
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex-1 mr-4">
+                          <h3 className="font-black text-gray-900 text-lg leading-tight">{survey.title}</h3>
+                          {survey.description && (
+                            <p className="text-gray-500 text-sm mt-2">{survey.description}</p>
+                          )}
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-xs font-bold text-gray-400 tracking-wider uppercase">До</p>
+                          <p className="text-sm font-black text-gray-900">
+                            {new Date(survey.closesAt).toLocaleDateString('bg-BG')}
+                          </p>
+                        </div>
                       </div>
-                      <div className="text-right flex-shrink-0">
-                        <p className="text-xs font-bold text-gray-400 tracking-wider uppercase">До</p>
-                        <p className="text-sm font-black text-gray-900">
-                          {new Date(survey.closesAt).toLocaleDateString('bg-BG')}
-                        </p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-green-500"></div>
+                          <span className="text-xs font-bold text-gray-400 tracking-wider uppercase">Активно</span>
+                        </div>
+                        <Link href={`/surveys/${survey.id}`}>
+                          <button className="bg-blue-600 text-white px-6 py-2 text-xs font-black tracking-widest uppercase hover:bg-blue-700 transition-colors">
+                            ГЛАСУВАЙ
+                          </button>
+                        </Link>
                       </div>
                     </div>
+                  ))}
 
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-green-500"></div>
-                        <span className="text-xs font-bold text-gray-400 tracking-wider uppercase">
-                          Активно
-                        </span>
-                      </div>
-                      <Link href={`/surveys/${survey.id}`}>
-                        <button className="bg-blue-600 text-white px-6 py-2 text-xs font-black tracking-widest uppercase hover:bg-blue-700 transition-colors">
-                          ГЛАСУВАЙ
+                  {surveys.length === 0 && (
+                    <div className="border-2 border-dashed border-gray-200 p-12 text-center">
+                      <p className="text-gray-400 font-bold tracking-wider uppercase text-sm">
+                        Няма активни проучвания
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Странирането */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between mt-6 pt-4 border-t-2 border-gray-900">
+                    <button
+                      onClick={() => setPage(p => Math.max(0, p - 1))}
+                      disabled={page === 0}
+                      className="border-2 border-gray-900 px-4 py-2 text-xs font-black tracking-widest uppercase hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    >
+                      ← ПРЕДИШНА
+                    </button>
+                    <div className="flex gap-1">
+                      {Array.from({ length: totalPages }).map((_, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setPage(i)}
+                          className={`w-8 h-8 text-xs font-black transition-colors ${
+                            page === i
+                              ? 'bg-slate-900 text-white'
+                              : 'border-2 border-gray-900 hover:bg-gray-50'
+                          }`}
+                        >
+                          {i + 1}
                         </button>
-                      </Link>
+                      ))}
                     </div>
-                  </div>
-                ))}
-
-                {surveys.length === 0 && (
-                  <div className="border-2 border-dashed border-gray-200 p-12 text-center">
-                    <p className="text-gray-400 font-bold tracking-wider uppercase text-sm">
-                      Няма активни проучвания
-                    </p>
+                    <button
+                      onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                      disabled={page === totalPages - 1}
+                      className="border-2 border-gray-900 px-4 py-2 text-xs font-black tracking-widest uppercase hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    >
+                      СЛЕДВАЩА →
+                    </button>
                   </div>
                 )}
-              </div>
+              </>
             )}
           </section>
 
-          {/* Дясна колона — placeholder */}
-          <aside className="col-span-3 hidden lg:block">
-            <div className="border-2 border-dashed border-gray-200 p-6 mb-4">
-              <p className="text-xs font-bold text-gray-300 tracking-widest uppercase text-center">
+          {/* Дясна колона — sticky */}
+          <aside className="col-span-3 hidden lg:block sticky top-24">
+            <div className="border-2 border-gray-900 p-5 mb-4">
+              <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-4">
                 Последни резултати
               </p>
-              <div className="mt-4 space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-8 bg-gray-50 border border-gray-100" />
-                ))}
-              </div>
+              <Link href="/archive" className="block">
+                <div className="py-2 border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Виж архива →</p>
+                </div>
+              </Link>
+              <Link href="/news" className="block mt-2">
+                <div className="py-2 hover:bg-gray-50 transition-colors">
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Последни новини →</p>
+                </div>
+              </Link>
             </div>
-            <div className="border-2 border-dashed border-gray-200 p-6">
-              <p className="text-xs font-bold text-gray-300 tracking-widest uppercase text-center">
-                Реклама
-              </p>
-              <div className="mt-4 h-40 bg-gray-50 border border-gray-100" />
+
+            <div className="border-2 border-dashed border-gray-200 p-5">
+              <p className="text-xs font-bold text-gray-300 tracking-widest uppercase text-center mb-3">Реклама</p>
+              <div className="h-48 bg-gray-50 border border-gray-100" />
             </div>
           </aside>
 
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="border-t-2 border-gray-900 py-8 mt-8">
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
           <span className="text-xs font-black text-gray-900 tracking-widest uppercase">
