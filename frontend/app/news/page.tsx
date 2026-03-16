@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Navbar from '@/app/components/Navbar';
+import Footer from '@/app/components/Footer';
+
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
@@ -288,16 +290,7 @@ export default function NewsPage() {
         )}
       </main>
 
-      <footer className="border-t-2 border-gray-900 py-8 mt-8">
-        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-          <span className="text-xs font-black text-gray-900 tracking-widest uppercase">
-            © 2026 Социолог.bg
-          </span>
-          <span className="text-xs font-bold text-gray-400 tracking-wider uppercase">
-            Анонимност и достоверност
-          </span>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
