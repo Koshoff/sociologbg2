@@ -22,14 +22,24 @@ interface Article {
 
 export default function ArticleClient({ article }: { article: Article }) {
   const [visible, setVisible] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
+  const [contactName, setContactName] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  const [contactMessage, setContactMessage] = useState('');
+  const [contactSent, setContactSent] = useState(false);
 
   useEffect(() => {
     setTimeout(() => setVisible(true), 100);
   }, []);
 
+  const handleContact = (e: React.FormEvent) => {
+    e.preventDefault();
+    setContactSent(true);
+  };
+
   return (
     <div className="min-h-screen bg-white font-sans">
-      <Navbar/>
+      <Navbar />
 
       {/* Hero */}
       <section className="bg-slate-900 pt-32 pb-16 px-6">
@@ -74,7 +84,7 @@ export default function ArticleClient({ article }: { article: Article }) {
           <article className="col-span-12 lg:col-span-8">
             <div className={`transition-all duration-700 delay-200 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
               {article.content.split('\n\n').map((paragraph, i) => (
-                <p key={i} className="text-gray-700 text-lg leading-relaxed mb-6 font-medium">
+                <p key={i} className="text-gray-700 text-lg leading-relaxed mb-8 font-medium">
                   {paragraph}
                 </p>
               ))}
@@ -82,13 +92,13 @@ export default function ArticleClient({ article }: { article: Article }) {
 
             {/* Източници */}
             {article.sources && (
-              <div className={`border-t-2 border-gray-900 pt-6 mt-6 transition-all duration-700 delay-300 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                <p className="text-xs font-black text-gray-900 tracking-widest uppercase mb-3">
+              <div className={`border-t-2 border-gray-900 pt-6 mt-8 transition-all duration-700 delay-300 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+                <p className="text-xs font-black text-gray-900 tracking-widest uppercase mb-4">
                   Източници
                 </p>
-                <div className="space-y-1">
+                <div className="space-y-2">
                   {article.sources.split('\n').filter(s => s.trim()).map((source, i) => (
-                    <p key={i} className="text-xs font-bold text-gray-400">
+                    <p key={i} className="text-xs font-bold text-gray-400 leading-relaxed">
                       {i + 1}. {source}
                     </p>
                   ))}
@@ -122,9 +132,17 @@ export default function ArticleClient({ article }: { article: Article }) {
               <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-3">
                 За платформата
               </p>
-              <p className="text-xs text-gray-500 font-bold leading-relaxed">
+              <p className="text-xs text-gray-500 font-bold leading-relaxed mb-4">
                 Социолог.bg е независима платформа за анонимни граждански проучвания. Всеки глас е защитен с криптографски хеш.
               </p>
+              <div className="space-y-2">
+                <Link href="/about">
+                  <p className="text-xs font-black text-gray-600 hover:text-gray-900 uppercase tracking-wider transition-colors">За нас →</p>
+                </Link>
+                <Link href="/mission">
+                  <p className="text-xs font-black text-gray-600 hover:text-gray-900 uppercase tracking-wider transition-colors">Нашата мисия →</p>
+                </Link>
+              </div>
             </div>
 
             {/* Реклама */}
@@ -136,14 +154,126 @@ export default function ArticleClient({ article }: { article: Article }) {
         </div>
       </main>
 
-      <footer className="border-t-2 border-gray-900 py-8 mt-8">
-        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-          <span className="text-xs font-black text-gray-900 tracking-widest uppercase">
-            © 2026 Социолог.bg
-          </span>
-          <span className="text-xs font-bold text-gray-400 tracking-wider uppercase">
-            Анонимност и достоверност
-          </span>
+      {/* Footer */}
+      <footer className="border-t-2 border-gray-900 mt-12">
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <div className="grid grid-cols-12 gap-8 mb-8">
+
+            {/* Лого и описание */}
+            <div className="col-span-12 lg:col-span-4">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 bg-slate-900 flex items-center justify-center">
+                  <span className="text-white font-black text-sm">С</span>
+                </div>
+                <span className="font-black text-gray-900 text-lg tracking-tight">СОЦИОЛОГ.BG</span>
+              </div>
+              <p className="text-sm text-gray-500 font-bold leading-relaxed mb-4">
+                Независима платформа за анонимни граждански проучвания и актуални новини. Твоят глас има значение.
+              </p>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                © 2026 Социолог.bg
+              </p>
+            </div>
+
+            {/* Навигация */}
+            <div className="col-span-6 lg:col-span-2">
+              <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-4">
+                Платформа
+              </p>
+              <div className="space-y-2">
+                {[
+                  { href: '/', label: 'Начало' },
+                  { href: '/news', label: 'Новини' },
+                  { href: '/archive', label: 'Архив' },
+                ].map(link => (
+                  <Link key={link.href} href={link.href}>
+                    <p className="text-xs font-bold text-gray-500 hover:text-gray-900 uppercase tracking-wider transition-colors">{link.label}</p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* За нас */}
+            <div className="col-span-6 lg:col-span-2">
+              <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-4">
+                За нас
+              </p>
+              <div className="space-y-2">
+                {[
+                  { href: '/about', label: 'За Социолог.bg' },
+                  { href: '/mission', label: 'Нашата мисия' },
+                  { href: '/privacy', label: 'Поверителност' },
+                  { href: '/terms', label: 'Условия' },
+                ].map(link => (
+                  <Link key={link.href} href={link.href}>
+                    <p className="text-xs font-bold text-gray-500 hover:text-gray-900 uppercase tracking-wider transition-colors">{link.label}</p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Контакт форма */}
+            <div className="col-span-12 lg:col-span-4">
+              <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-4">
+                Свържи се с нас
+              </p>
+              {contactSent ? (
+                <div className="border-2 border-green-500 p-4">
+                  <p className="text-xs font-black text-green-600 uppercase tracking-wider">
+                    ✓ Съобщението е изпратено!
+                  </p>
+                </div>
+              ) : (
+                <form onSubmit={handleContact} className="space-y-3">
+                  <input
+                    type="text"
+                    value={contactName}
+                    onChange={e => setContactName(e.target.value)}
+                    placeholder="Вашето име"
+                    required
+                    className="w-full border-2 border-gray-300 px-3 py-2 text-xs font-bold focus:outline-none focus:border-gray-900"
+                  />
+                  <input
+                    type="email"
+                    value={contactEmail}
+                    onChange={e => setContactEmail(e.target.value)}
+                    placeholder="Имейл адрес"
+                    required
+                    className="w-full border-2 border-gray-300 px-3 py-2 text-xs font-bold focus:outline-none focus:border-gray-900"
+                  />
+                  <textarea
+                    value={contactMessage}
+                    onChange={e => setContactMessage(e.target.value)}
+                    placeholder="Вашето съобщение"
+                    required
+                    rows={3}
+                    className="w-full border-2 border-gray-300 px-3 py-2 text-xs font-bold focus:outline-none focus:border-gray-900"
+                  />
+                  <button
+                    type="submit"
+                    className="w-full bg-slate-900 text-white py-2 text-xs font-black tracking-widest uppercase hover:bg-slate-700 transition-colors"
+                  >
+                    ИЗПРАТИ
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
+
+          {/* Bottom bar */}
+          <div className="border-t-2 border-gray-100 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+              Анонимност и достоверност
+            </span>
+            <div className="flex gap-6">
+              <Link href="/privacy">
+                <span className="text-xs font-bold text-gray-400 hover:text-gray-900 uppercase tracking-wider transition-colors">Поверителност</span>
+              </Link>
+              <Link href="/terms">
+                <span className="text-xs font-bold text-gray-400 hover:text-gray-900 uppercase tracking-wider transition-colors">Условия</span>
+              </Link>
+            </div>
+          </div>
         </div>
       </footer>
     </div>
