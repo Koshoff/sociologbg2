@@ -30,6 +30,7 @@ services:
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       JWT_SECRET: ${JWT_SECRET}
       VOTE_HASH_PEPPER: ${VOTE_HASH_PEPPER}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
     ports:
       - "8080:8080"
     depends_on:
