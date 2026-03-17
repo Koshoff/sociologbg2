@@ -85,7 +85,7 @@ export default function ArticleClient({ article }: { article: Article }) {
           {/* Статия */}
           <article className="col-span-12 lg:col-span-8">
             <div className={`transition-all duration-700 delay-200 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-              {article.content.split('\n\n').map((paragraph, i) => (
+              {(article.content || '').split('\n\n').map((paragraph, i) => (
                 <p key={i} className="text-gray-700 text-lg leading-relaxed mb-8 font-medium">
                   {paragraph}
                 </p>
@@ -99,7 +99,7 @@ export default function ArticleClient({ article }: { article: Article }) {
                   Източници
                 </p>
                 <div className="space-y-2">
-                  {article.sources.split('\n').filter(s => s.trim()).map((source, i) => (
+                  {article.sources && article.sources.split('\n').filter(s => s.trim()).map((source, i) => (
                     <p key={i} className="text-xs font-bold text-gray-400 leading-relaxed">
                       {i + 1}. {source}
                     </p>
