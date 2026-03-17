@@ -5,13 +5,17 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/app/components/Navbar';
 import Footer from '@/app/components/Footer';
+import { getSurvey, getResults, Survey, VoteResult } from '@/lib/api';
 
-
-import { getSurvey, castVote, getResults, Survey, VoteResult } from '@/lib/api';
-
-
-
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
 const CHOICES = ['ДА', 'НЕ', 'ВЪЗДЪРЖАЛ СЕ'];
+
+declare global {
+  interface Window {
+    google: any;
+  }
+}
 
 export default function SurveyPage() {
   const { id } = useParams<{ id: string }>();
@@ -24,6 +28,7 @@ export default function SurveyPage() {
   const [voting, setVoting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [visible, setVisible] = useState(false);
+  const [showGooglePopup, setShowGooglePopup] = useState(false);
 
   useEffect(() => {
     const voted = localStorage.getItem(`voted_${id}`);
@@ -38,27 +43,59 @@ export default function SurveyPage() {
     setTimeout(() => setVisible(true), 100);
   }, [id]);
 
-  const handleVote = async () => {
+  useEffect(() => {
+    if (!showGooglePopup) return;
+
+    const interval = setInterval(() => {
+      if (window.google) {
+        clearInterval(interval);
+        window.google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleGoogleResponse,
+          auto_select: false,
+        });
+        window.google.accounts.id.renderButton(
+          document.getElementById('google-signin-button'),
+          {
+            theme: 'outline',
+            size: 'large',
+            width: '100%',
+            text: 'continue_with',
+            locale: 'bg',
+          }
+        );
+      }
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [showGooglePopup]);
+
+  const handleGoogleResponse = async (response: any) => {
     if (!selectedChoice) return;
     setVoting(true);
     setError(null);
+    setShowGooglePopup(false);
 
     try {
-      const fingerprint = `${navigator.userAgent}_${screen.width}x${screen.height}_${Intl.DateTimeFormat().resolvedOptions().timeZone}`;
-
-      const result = await castVote(id, {
-        choice: selectedChoice,
-        identifier: fingerprint,
-        trustLevel: 1,
+      const res = await fetch(`${API_URL}/api/votes/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          choice: selectedChoice,
+          identifier: response.credential,
+          trustLevel: 3,
+        }),
       });
 
-      if (result.success) {
+      const data = await res.json();
+
+      if (data.success) {
         localStorage.setItem(`voted_${id}`, 'true');
         setHasVoted(true);
         const newResults = await getResults(id);
         setResults(newResults);
       } else {
-        setError(result.message || 'Грешка при гласуване');
+        setError(data.message || 'Грешка при гласуване');
       }
     } catch {
       setError('Грешка при гласуване. Опитайте отново.');
@@ -71,37 +108,58 @@ export default function SurveyPage() {
   const totalVotes = Object.values(total).reduce((a, b) => a + b, 0);
 
   if (loading) return (
-  <div className="min-h-screen bg-white font-sans">
-    <Navbar />
-    <div className="max-w-3xl mx-auto px-6 pt-32 space-y-4">
-      <div className="h-12 bg-gray-100 animate-pulse" />
-      <div className="h-6 bg-gray-50 animate-pulse w-2/3" />
-      <div className="h-48 bg-gray-50 animate-pulse mt-8" />
+    <div className="min-h-screen bg-white font-sans">
+      <Navbar />
+      <div className="max-w-3xl mx-auto px-6 pt-32 space-y-4">
+        <div className="h-12 bg-gray-100 animate-pulse" />
+        <div className="h-6 bg-gray-50 animate-pulse w-2/3" />
+        <div className="h-48 bg-gray-50 animate-pulse mt-8" />
+      </div>
     </div>
-  </div>
-);
+  );
 
   return (
     <div className="min-h-screen bg-white font-sans">
+      <Navbar />
 
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b-2 border-gray-900">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-slate-900 flex items-center justify-center">
-              <span className="text-white font-black text-sm">С</span>
+      {/* Google Popup */}
+      {showGooglePopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center px-4">
+          <div className="bg-white border-2 border-gray-900 p-8 max-w-sm w-full">
+            <div className="flex justify-between items-center mb-6 pb-2 border-b-2 border-gray-900">
+              <p className="text-xs font-black text-gray-900 tracking-widest uppercase">
+                Потвърди гласа си
+              </p>
+              <button
+                onClick={() => setShowGooglePopup(false)}
+                className="text-gray-400 hover:text-gray-900 font-black text-lg transition-colors"
+              >
+                ✕
+              </button>
             </div>
-            <span className="font-black text-gray-900 text-lg tracking-tight">СОЦИОЛОГ.BG</span>
+
+            <p className="text-sm font-bold text-gray-600 mb-4 leading-relaxed">
+              За да потвърдим че гласът ти е реален, влез с Google акаунт. Не съхраняваме личните ти данни — само криптографски хеш.
+            </p>
+
+            <div className="border-2 border-gray-100 p-3 mb-6">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Избран отговор</p>
+              <p className="text-sm font-black text-gray-900">{selectedChoice}</p>
+            </div>
+
+            <div id="google-signin-button" className="flex justify-center mb-4" />
+
+            <p className="text-xs text-gray-400 font-bold text-center leading-relaxed">
+              Твоята самоличност остава анонимна. Използваме само Google ID за предотвратяване на двойно гласуване.
+            </p>
           </div>
-          <Navbar />
         </div>
-      </header>
+      )}
 
       {/* Hero */}
       <section className="bg-slate-900 pt-32 pb-16 px-6">
         <div className="max-w-3xl mx-auto">
           <div className={`transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-        
             <div className="inline-block border border-blue-500 px-3 py-1 mb-4">
               <span className="text-blue-400 text-xs font-bold tracking-widest uppercase">
                 ● Активно проучване
@@ -111,12 +169,15 @@ export default function SurveyPage() {
               {survey?.title}
             </h1>
             {survey?.description && (
-              <p className="text-gray-400 text-lg">{survey.description}</p>
+              <p className="text-gray-400 text-lg mb-4">{survey.description}</p>
             )}
-            <p className="text-gray-600 text-sm mt-3 font-bold tracking-wider uppercase">
+            <p className="text-gray-600 text-sm font-bold tracking-wider uppercase mb-4">
               Затваря: {survey && new Date(survey.closesAt).toLocaleDateString('bg-BG')}
             </p>
-            <Link href="/" className="inline-flex items-center gap-2 text-gray-400 hover:text-white text-sm font-bold tracking-wider uppercase mb-6 transition-colors">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 text-gray-400 hover:text-white text-xs font-black tracking-wider uppercase transition-colors border border-gray-600 px-4 py-2 hover:border-white"
+            >
               ← НАЗАД
             </Link>
           </div>
@@ -166,7 +227,10 @@ export default function SurveyPage() {
                 )}
 
                 <button
-                  onClick={handleVote}
+                  onClick={() => {
+                    if (!selectedChoice) return;
+                    setShowGooglePopup(true);
+                  }}
                   disabled={!selectedChoice || voting}
                   className="w-full py-4 bg-blue-600 text-white font-black text-sm tracking-widest uppercase hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
@@ -174,7 +238,7 @@ export default function SurveyPage() {
                 </button>
 
                 <p className="text-xs text-gray-400 font-bold tracking-wider mt-3 text-center uppercase">
-                  Анонимно · Без регистрация
+                  Верифицирано с Google · Без двойно гласуване
                 </p>
               </div>
             ) : (
@@ -203,7 +267,6 @@ export default function SurveyPage() {
                   .map(([choice, count]) => {
                     const percent = Math.round((count / totalVotes) * 100);
                     const isWinner = count === Math.max(...Object.values(total));
-
                     return (
                       <div key={choice}>
                         <div className="flex justify-between text-sm mb-1">
@@ -229,7 +292,6 @@ export default function SurveyPage() {
               </p>
             )}
 
-            {/* Верификация */}
             {totalVotes > 0 && results && (
               <div className="border-t-2 border-gray-900 pt-4">
                 <p className="text-xs font-black text-gray-400 tracking-widest uppercase mb-3">
@@ -253,8 +315,7 @@ export default function SurveyPage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <Footer/>
+      <Footer />
     </div>
   );
 }

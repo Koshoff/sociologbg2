@@ -19,6 +19,7 @@ public class VoteService {
     private final VoteRepository voteRepository;
     private final UsedHashRepository usedHashRepository;
     private final SurveyService surveyService;
+    private final GoogleAuthService googleAuthService;
     private final HashUtil hashUtil;
 
     /**
@@ -37,24 +38,28 @@ public class VoteService {
     public Vote castVote(UUID surveyId, String choice, String identifier,
                          Integer trustLevel, String region) {
 
-        // 1. Вземаме проучването (хвърля exception ако не съществува)
         Survey survey = surveyService.getById(surveyId);
 
-        // 2. Проверяваме дали проучването е активно
         if (!survey.getIsActive()) {
             throw new RuntimeException("Survey is closed");
         }
 
-        // 3. Генерираме анонимния хеш
-        // SHA256(identifier + survey_salt + pepper)
-        String voteHash = hashUtil.generateVoteHash(identifier, survey.getSalt());
+        // Ако е Google верификация — верифицираме токена и извличаме Google ID
+        String resolvedIdentifier = identifier;
+        if (trustLevel == 3) {
+            String googleId = googleAuthService.verifyAndGetGoogleId(identifier);
+            if (googleId == null) {
+                throw new RuntimeException("Invalid Google token");
+            }
+            resolvedIdentifier = googleId;
+        }
 
-        // 4. Проверяваме дали вече е гласувано с този хеш
+        String voteHash = hashUtil.generateVoteHash(resolvedIdentifier, survey.getSalt());
+
         if (usedHashRepository.existsByHashAndSurveyId(voteHash, surveyId)) {
             throw new RuntimeException("Already voted");
         }
 
-        // 5. Записваме хеша като "използван"
         UsedHash usedHash = UsedHash.builder()
                 .hash(voteHash)
                 .survey(survey)
@@ -62,7 +67,6 @@ public class VoteService {
                 .build();
         usedHashRepository.save(usedHash);
 
-        // 6. Записваме гласа (БЕЗ никакви лични данни!)
         Vote vote = Vote.builder()
                 .survey(survey)
                 .choice(choice)

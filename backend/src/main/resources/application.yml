@@ -31,7 +31,9 @@ app:
   cors:
     allowed-origins: http://localhost:3000
   anthropic:
-    api-key: ${ANTHROPIC_API_KEY}  
+    api-key: ${ANTHROPIC_API_KEY}
+  google:
+    client-id: ${GOOGLE_CLIENT_ID}
 
 # ─── Logging ──────────────────────────────────────────────
 logging:
