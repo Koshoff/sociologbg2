@@ -94,10 +94,11 @@ public class SecurityHeadersFilter extends OncePerRequestFilter {
          */
         response.setHeader("Content-Security-Policy",
                 "default-src 'self'; " +
-                        "script-src 'self'; " +
+                        "script-src 'self' https://accounts.google.com; " +
                         "style-src 'self' 'unsafe-inline'; " +
-                        "img-src 'self' data:; " +
-                        "connect-src 'self' http://localhost:3000; " +
+                        "img-src 'self' data: https://lh3.googleusercontent.com; " +
+                        "connect-src 'self' https://sociolog.online; " +
+                        "frame-src https://accounts.google.com; " +
                         "frame-ancestors 'none';"
         );
 
