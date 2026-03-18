@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import Image from 'next/image';
+
 
 const navLinks = [
   { href: '/', label: 'НАЧАЛО' },
@@ -19,11 +21,14 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
         
         {/* Лого */}
-        <img src="/sociolog-bg-logo.png" 
-             alt="Социолог.bg" 
-             className="h-10 w-auto" 
-             style={{ minHeight: '40px', maxHeight: '48px' }} 
-             />
+        <Image 
+          src="/sociolog-bg-logo.png" 
+          alt="Социолог.bg" 
+          width={180} 
+          height={48}
+          className="w-auto"
+          priority
+        />
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1">
