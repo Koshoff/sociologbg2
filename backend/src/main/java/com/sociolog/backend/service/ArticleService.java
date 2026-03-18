@@ -5,6 +5,7 @@ import com.sociolog.backend.entity.Survey;
 import com.sociolog.backend.repository.ArticleRepository;
 import com.sociolog.backend.repository.SurveyRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,6 +20,7 @@ public class ArticleService {
     private final ArticleRepository articleRepository;
     private final SurveyRepository surveyRepository;
 
+    @Transactional(readOnly = true)
     public List<Article> getPublished() {
         return articleRepository.findByStatusOrderByPublishedAtDesc("published");
     }
@@ -27,10 +29,12 @@ public class ArticleService {
         return articleRepository.findAllByOrderByCreatedAtDesc();
     }
 
+    @Transactional(readOnly = true)
     public List<Article> getWithActiveSurveys() {
         return articleRepository.findByStatusAndSurveyIsActiveTrue("published");
     }
 
+    @Transactional(readOnly = true)
     public Article getById(UUID id) {
         return articleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Article not found"));
@@ -48,7 +52,7 @@ public class ArticleService {
         article.setStatus("draft");
         return articleRepository.save(article);
     }
-
+    @Transactional(readOnly = true)
     public Article publish(UUID id, String surveyTitle, String surveyDescription, LocalDateTime closesAt) {
         Article article = getById(id);
 

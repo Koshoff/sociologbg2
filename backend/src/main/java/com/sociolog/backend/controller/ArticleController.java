@@ -30,7 +30,11 @@ public class ArticleController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ArticleResponse> getById(@PathVariable UUID id) {
-        return ResponseEntity.ok(ArticleResponse.from(articleService.getById(id)));
+        try {
+            return ResponseEntity.ok(ArticleResponse.from(articleService.getById(id)));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build(); // връща 404 вместо 500
+        }
     }
 
     @GetMapping("/with-active-surveys")
