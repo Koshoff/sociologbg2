@@ -124,34 +124,60 @@ export default function SurveyPage() {
 
       {/* Google Popup */}
       {showGooglePopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center px-4">
-          <div className="bg-white border-2 border-gray-900 p-8 max-w-sm w-full">
-            <div className="flex justify-between items-center mb-6 pb-2 border-b-2 border-gray-900">
-              <p className="text-xs font-black text-gray-900 tracking-widest uppercase">
-                Потвърди гласа си
-              </p>
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center px-4"
+          style={{ backgroundColor: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(4px)' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowGooglePopup(false); }}
+        >
+          <div className="bg-white border-2 border-gray-900 max-w-sm w-full"
+            style={{ boxShadow: '8px -8px 0px rgba(0,0,0,0.15)' }}
+          >
+            {/* Header */}
+            <div className="flex justify-between items-center px-6 py-4 border-b-2 border-gray-900 bg-slate-900">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                <p className="text-xs font-black text-white tracking-widest uppercase">
+                  Потвърди гласа си
+                </p>
+              </div>
               <button
                 onClick={() => setShowGooglePopup(false)}
-                className="text-gray-400 hover:text-gray-900 font-black text-lg transition-colors"
+                className="text-gray-400 hover:text-white font-black text-lg transition-colors"
               >
                 ✕
               </button>
             </div>
 
-            <p className="text-sm font-bold text-gray-600 mb-4 leading-relaxed">
-              За да потвърдим че гласът ти е реален, влез с Google акаунт. Не съхраняваме личните ти данни — само криптографски хеш.
-            </p>
+            <div className="p-6">
+              {/* Избран отговор */}
+              <div className="border-2 border-blue-600 p-4 mb-5 flex items-center justify-between">
+                <p className="text-xs font-black text-blue-600 uppercase tracking-widest">
+                  Твоят избор
+                </p>
+                <p className="text-sm font-black text-gray-900 uppercase tracking-wider">
+                  {selectedChoice}
+                </p>
+              </div>
 
-            <div className="border-2 border-gray-100 p-3 mb-6">
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Избран отговор</p>
-              <p className="text-sm font-black text-gray-900">{selectedChoice}</p>
+              {/* Описание */}
+              <p className="text-xs font-bold text-gray-500 mb-5 leading-relaxed">
+                За да потвърдим че гласът ти е реален, влез с Google. 
+                Не съхраняваме лични данни — само криптографски хеш.
+              </p>
+
+              {/* Google бутон */}
+              <div id="google-signin-button" className="flex justify-center mb-5" />
+
+              {/* Footer */}
+              <div className="border-t-2 border-gray-100 pt-4 flex items-center gap-2">
+                <div className="w-4 h-4 bg-green-500 flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-xs font-black">✓</span>
+                </div>
+                <p className="text-xs text-gray-400 font-bold leading-relaxed">
+                  Анонимно · Защитено · Без двойно гласуване
+                </p>
+              </div>
             </div>
-
-            <div id="google-signin-button" className="flex justify-center mb-4" />
-
-            <p className="text-xs text-gray-400 font-bold text-center leading-relaxed">
-              Твоята самоличност остава анонимна. Използваме само Google ID за предотвратяване на двойно гласуване.
-            </p>
           </div>
         </div>
       )}
