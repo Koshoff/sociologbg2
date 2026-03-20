@@ -22,10 +22,10 @@ export default function Navbar() {
         
         {/* Лого */}
         <Image 
-          src="/sociolog-bg-logo.png" 
+          src="/sociolog-bg-logo-trimmed.png" 
           alt="Социолог.bg" 
-          width={180} 
-          height={48}
+          width={150} 
+          height={32}
           className="w-auto"
           priority
         />
