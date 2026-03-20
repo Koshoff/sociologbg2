@@ -173,7 +173,7 @@ export default function AdminDashboard() {
         body: JSON.stringify({
           surveyTitle: publishSurveyTitle,
           surveyDescription: publishSurveyDescription,
-          closesAt: publishClosesAt,
+          closesAt: publishClosesAt + ':00', // Добави секунди
         }),
       });
       setGeneratedArticle(null);
