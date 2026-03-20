@@ -24,9 +24,11 @@ export default function Navbar() {
         <Image 
           src="/sociolog-bg-logo-trimmed.png" 
           alt="Социолог.bg" 
-          width={150} 
+          width={150
+
+          } 
           height={32}
-          className="w-auto"
+          className="w-auto my-auto"
           priority
         />
 
