@@ -199,7 +199,7 @@ export default function NewsPage() {
               {rest.map((article, index) => (
                 <Link key={article.id} href={`/news/${article.id}`}>
                   <div
-                    className={`border-2 border-gray-900 p-5 cursor-pointer transition-all duration-150 ${
+                    className={`border-2 border-gray-900 p-5 cursor-pointer transition-all duration-150 mt-4 ${
                       visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
                     }`}
                     style={{ transitionDelay: `${index * 100}ms` }}
