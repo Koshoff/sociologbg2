@@ -241,11 +241,11 @@ export default function HomePage() {
                     <button
                       onClick={() => setPage(p => Math.max(0, p - 1))}
                       disabled={page === 0}
-                      className="border-2 border-gray-900 px-4 py-2 text-xs font-black tracking-widest uppercase hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      className="border-2 border-gray-900 px-3 py-2 text-xs font-black tracking-widest uppercase hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                     >
                       ← ПРЕДИШНА
                     </button>
-                    <div className="flex gap-2">
+                    <div className="flex gap-1">
                       {Array.from({ length: totalPages }).map((_, i) => (
                         <button
                           key={i}
@@ -263,7 +263,7 @@ export default function HomePage() {
                     <button
                       onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
                       disabled={page === totalPages - 1}
-                      className="border-2 border-gray-900 px-4 py-2 text-xs font-black tracking-widest uppercase hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      className="border-2 border-gray-900 px-3 py-2 text-xs font-black tracking-widest uppercase hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                     >
                       СЛЕДВАЩА →
                     </button>
