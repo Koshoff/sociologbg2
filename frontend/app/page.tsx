@@ -245,7 +245,7 @@ export default function HomePage() {
                     >
                       ← ПРЕДИШНА
                     </button>
-                    <div className="flex gap-1">
+                    <div className="flex gap-2">
                       {Array.from({ length: totalPages }).map((_, i) => (
                         <button
                           key={i}
@@ -272,6 +272,81 @@ export default function HomePage() {
               </>
             )}
           </section>
+
+
+          {/* Мобилна допълнителна информация */}
+          <div className="col-span-12 lg:hidden space-y-4 mt-4">
+
+            {/* Топ анкети */}
+            <div className="border-2 border-gray-900 p-5">
+              <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-4">
+                Топ проучвания
+              </p>
+              {topSurveys.length > 0 ? (
+                <div className="space-y-3">
+                  {topSurveys.map((s, i) => (
+                    <Link key={s.id} href={`/surveys/${s.id}`}>
+                      <div className="flex items-start gap-3 py-2 border-b border-gray-100 last:border-0">
+                        <span className="text-2xl font-black text-gray-200 leading-none w-6 flex-shrink-0">{i + 1}</span>
+                        <div>
+                          <p className="text-xs font-black text-gray-900 leading-tight">{s.title}</p>
+                          <p className="text-xs font-bold text-blue-600 mt-1">{Number(s.vote_count)} гласа</p>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Няма данни</p>
+              )}
+            </div>
+
+            {/* Последни новини */}
+            <div className="border-2 border-gray-900 p-5">
+              <div className="flex justify-between items-center border-b-2 border-gray-900 pb-2 mb-4">
+                <p className="text-xs font-black text-gray-900 tracking-widest uppercase">Последни новини</p>
+                <Link href="/news" className="text-xs font-bold text-blue-600 uppercase tracking-wider">Всички →</Link>
+              </div>
+              {latestNews.length > 0 ? (
+                <div className="space-y-3">
+                  {latestNews.map((article) => (
+                    <Link key={article.id} href={`/news/${article.id}`}>
+                      <div className="py-2 border-b border-gray-100 last:border-0">
+                        <p className="text-xs font-black text-gray-900 leading-tight mb-1">{article.title}</p>
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                          {new Date(article.publishedAt || article.createdAt).toLocaleDateString('bg-BG')}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Няма новини</p>
+              )}
+            </div>
+
+            {/* Статистика */}
+            <div className="border-2 border-gray-900 p-5">
+              <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-4">
+                Статистика
+              </p>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <p className="text-lg font-black text-gray-900">{surveys.length}</p>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Активни</p>
+                </div>
+                <div>
+                  <p className="text-lg font-black text-gray-900">{totalVotes.toLocaleString('bg-BG')}</p>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Гласове</p>
+                </div>
+                <div>
+                  <p className="text-lg font-black text-gray-900">{page + 1}/{totalPages || 1}</p>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Страница</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
 
           {/* Дясна колона — sticky */}
           <aside className="col-span-3 hidden lg:block sticky top-24 space-y-4">
