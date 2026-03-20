@@ -21,16 +21,16 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
         
         {/* Лого */}
-        <Image 
-          src="/sociolog-bg-logo-trimmed.png" 
-          alt="Социолог.bg" 
-          width={150
-
-          } 
-          height={32}
-          className="w-auto my-auto"
-          priority
-        />
+        <div className="flex items-center">
+          <Image 
+            src="/sociolog-bg-logo-trimmed.png" 
+            alt="Социолог.bg" 
+            width={150} 
+            height={32}
+            className="w-auto"
+            priority
+          />
+        </div>
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1">
