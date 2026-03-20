@@ -227,6 +227,107 @@ export default function NewsPage() {
               ))}
             </div>
 
+
+            {/* Мобилна допълнителна информация */}
+            <div className="col-span-12 lg:hidden space-y-4 mt-4">
+
+              {/* Гласувай сега */}
+              <div className="border-2 border-gray-900 p-5">
+                <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-4">
+                  Гласувай сега
+                </p>
+                {articlesWithSurveys.length > 0 ? (
+                  <div className="space-y-3">
+                    {articlesWithSurveys.map((article) => (
+                      <div key={article.id} className="py-2 border-b border-gray-100 last:border-0">
+                        <p className="text-xs font-black text-gray-900 leading-tight mb-1">{article.surveyTitle}</p>
+                        <div className="flex justify-between items-center mt-2">
+                          <Link href={`/news/${article.id}`}>
+                            <span className="text-xs font-bold text-gray-400 hover:text-gray-900 uppercase tracking-wider transition-colors">
+                              Статия →
+                            </span>
+                          </Link>
+                          <Link href={`/surveys/${article.surveyId}`}>
+                            <span className="text-xs font-black text-blue-600 hover:text-blue-800 uppercase tracking-wider transition-colors">
+                              Гласувай →
+                            </span>
+                          </Link>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Няма активни анкети</p>
+                )}
+              </div>
+
+              {/* Последни резултати */}
+              <div className="border-2 border-gray-900 p-5">
+                <div className="flex justify-between items-center border-b-2 border-gray-900 pb-2 mb-4">
+                  <p className="text-xs font-black text-gray-900 tracking-widest uppercase">
+                    Последни резултати
+                  </p>
+                  <Link href="/archive">
+                    <span className="text-xs font-bold text-blue-600 hover:text-blue-800 uppercase tracking-wider">Всички →</span>
+                  </Link>
+                </div>
+                {archivedTop.length > 0 ? (
+                  <div className="space-y-3">
+                    {archivedTop.map(({ survey, totalVotes, results }) => {
+                      const total = results.total || {};
+                      const winner = Object.entries(total).sort(([,a],[,b]) => b - a)[0];
+                      return (
+                        <div key={survey.id} className="py-2 border-b border-gray-100 last:border-0">
+                          <p className="text-xs font-black text-gray-900 leading-tight mb-1">{survey.title}</p>
+                          {winner && (
+                            <p className="text-xs font-bold text-blue-600">
+                              ▲ {winner[0]} — {Math.round((winner[1] / totalVotes) * 100)}%
+                            </p>
+                          )}
+                          <p className="text-xs font-bold text-gray-400 mt-1">{totalVotes} гласа</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Няма архивирани</p>
+                )}
+              </div>
+
+              {/* Статистика */}
+              <div className="border-2 border-gray-900 p-5">
+                <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-4">
+                  Статистика
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-lg font-black text-gray-900">{articles.length}</p>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Статии</p>
+                  </div>
+                  <div>
+                    <p className="text-lg font-black text-gray-900">{articlesWithSurveys.length}</p>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">С анкети</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* За платформата */}
+              <div className="border-2 border-gray-900 p-5">
+                <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-3">
+                  За платформата
+                </p>
+                <p className="text-xs text-gray-500 font-bold leading-relaxed mb-3">
+                  Социолог.bg е независима платформа за анонимни граждански проучвания и новини.
+                </p>
+                <Link href="/">
+                  <span className="text-xs font-black text-blue-600 hover:text-blue-800 uppercase tracking-wider transition-colors">
+                    Виж проучванията →
+                  </span>
+                </Link>
+              </div>
+
+            </div>
+
             {/* Дясна колона — sticky */}
             <aside className="col-span-3 hidden lg:block sticky top-24 space-y-4">
 
