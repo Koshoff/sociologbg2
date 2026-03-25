@@ -5,9 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1d8af004-cc82-42ee-bd9c-aa3222c4aa7b" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/sociolog/backend/util/SurveyScheduler.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/sociolog/backend/service/ArticleService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/sociolog/backend/service/ArticleService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/sociolog/backend/BackendApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/sociolog/backend/BackendApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/sociolog/backend/repository/SurveyRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/sociolog/backend/repository/SurveyRepository.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
