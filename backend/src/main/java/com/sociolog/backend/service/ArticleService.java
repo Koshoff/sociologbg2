@@ -52,7 +52,7 @@ public class ArticleService {
         article.setStatus("draft");
         return articleRepository.save(article);
     }
-    @Transactional(readOnly = true)
+    @Transactional
     public Article publish(UUID id, String surveyTitle, String surveyDescription, LocalDateTime closesAt) {
         Article article = getById(id);
 
