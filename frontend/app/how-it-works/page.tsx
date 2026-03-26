@@ -15,56 +15,55 @@ export default function HowItWorksPage() {
   const steps = [
     {
       number: '01',
-      title: 'Влизате с Google',
+      title: 'Удостоверяване с Google',
       technical: 'OAuth 2.0 токен верификация',
       description:
-        'Когато гласувате като верифициран потребител, използваме Google Login. Получаваме само вашия уникален Google ID — дълга поредица от цифри. Никога не виждаме паролата ви, имейла ви или каквато и да е друга лична информация.',
+        'При гласуване системата получава временен OAuth токен от Google. От него извличаме единствено вашия Google ID — уникален числов идентификатор. Паролата ви, имейлът ви и всякаква друга лична информация остават недостъпни за нас.',
       detail:
-        'Примерен Google ID: 108234567890123456789 — само това число постъпва в системата ни.',
+        'Примерен Google ID: 108234567890123456789 — само това число постъпва в обработката. Токенът не се съхранява.',
       icon: '🔑',
     },
     {
       number: '02',
-      title: 'Добавяме уникален Salt',
-      technical: 'SHA-256 криптографски хеш',
+      title: 'Комбиниране със Salt и Pepper',
+      technical: 'Криптографска подготовка',
       description:
-        'Всяко проучване има свой уникален "salt" — произволна поредица от символи, генерирана при създаването му. Комбинираме вашия Google ID + salt на проучването + таен "pepper" (известен само на сървъра).',
+        'Всяко проучване притежава уникален "salt" — произволна низова стойност, генерирана при създаването му. Към нея се добавя и "pepper" — таен ключ, съхраняван единствено на сървъра и непознат дори на базата данни. Трите стойности се обединяват преди хеширане.',
       detail:
-        'Salt пример: a3f8c2d1e9b4... — уникален за всяко проучване, така хешът ви е различен за всяко гласуване.',
-      icon: '🧂',
+        'Salt пример: a3f8c2d1e9b4... — различен за всяко проучване. Това гарантира, че хешът ви е уникален за всяко отделно гласуване.',
+      icon: '⚙',
     },
     {
       number: '03',
-      title: 'Генерираме хеш',
-      technical: 'Еднопосочна функция — необратима',
+      title: 'Генериране на хеш',
+      technical: 'SHA-256 — еднопосочна функция',
       description:
-        'От комбинацията Google ID + salt + pepper изчисляваме SHA-256 хеш. Това е математическа операция с една посока — от хеша е невъзможно да се върне оригиналният ви Google ID. Записваме само хеша.',
+        'От комбинацията Google ID + salt + pepper се изчислява SHA-256 хеш. Това е стандартна криптографска операция с математически доказана необратимост — от получения хеш е невъзможно да се възстанови оригиналният Google ID.',
       detail:
-        'SHA-256("108234...AB" + salt + pepper) → "e3b0c44298fc1c149afb..." — само това влиза в базата данни.',
+        'SHA-256("108234...AB" + salt + pepper) → "e3b0c44298fc1c149afb..." — единствено това постъпва в базата данни.',
       icon: '#',
     },
     {
       number: '04',
-      title: 'Гласът е анонимен',
-      technical: 'Vote и Hash са в отделни таблици',
+      title: 'Анонимно записване на гласа',
+      technical: 'Физически разделени таблици',
       description:
-        'Гласът ви ("ДА", "НЕ" и т.н.) се записва в отделна таблица от хеша. Двете записи нямат никаква обща колона — не може да се свържат. Хешът служи единствено за проверка дали вече сте гласували.',
+        'Гласът ви се записва в таблица votes. Хешът се записва в таблица used_hashes. Двете таблици не споделят обща колона и не могат да бъдат свързани по никакъв начин. Дори при пълен достъп до базата данни е невъзможно да се установи кой потребител е подал кой глас.',
       detail:
-        'Таблица votes: { choice: "ДА", region: "София", trustLevel: 3 } — нито хеш, нито Google ID.',
+        'Таблица votes: { choice: "ДА" } — без хеш, без Google ID, без каквато и да е лична информация.',
       icon: '✓',
     },
     {
       number: '05',
-      title: 'Защита от двойно гласуване',
-      technical: 'usedHashes таблица',
+      title: 'Предотвратяване на двойно гласуване',
+      technical: 'used_hashes таблица',
       description:
-        'Преди да запишем гласа, проверяваме дали хешът вече съществува в таблицата used_hashes. Ако съществува — гласуването е блокирано. Ако не — хешът се записва и гласът минава. Никога не проверяваме кой сте.',
+        'Преди записване на глас системата проверява дали генерираният хеш вече съществува в used_hashes. При намиране — гласуването е отхвърлено. При липса — хешът се записва и гласът се приема. Системата не установява самоличност, а единствено уникалност.',
       detail:
-        'Системата не знае "Иван Иванов е гласувал" — знае само "хеш e3b0c4... е използван".',
+        'Системата не знае "този потребител е гласувал" — знае само "хеш e3b0c4... е регистриран за това проучване".',
       icon: '🛡',
     },
   ];
-
 
   return (
     <div className="min-h-screen bg-white font-sans">
@@ -74,31 +73,19 @@ export default function HowItWorksPage() {
       <section className="bg-slate-900 pt-32 pb-20 px-6">
         <div className="max-w-7xl mx-auto">
           <div className={`transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-            <div className="inline-block border border-blue-500 px-3 py-1 mb-4">
-              <span className="text-blue-400 text-xs font-bold tracking-widest uppercase">
-                ● Прозрачност & Защита
+            <div className="inline-block border border-gray-600 px-3 py-1 mb-4">
+              <span className="text-gray-400 text-xs font-bold tracking-widest uppercase">
+                Прозрачност & Техническа документация
               </span>
             </div>
             <h1 className="text-5xl md:text-7xl font-black text-white leading-none mb-6 tracking-tight">
               КАК<br />РАБОТИ
             </h1>
             <p className="text-gray-400 text-lg max-w-2xl leading-relaxed">
-              Обясняваме технически и на разбираем език защо вашият глас е напълно анонимен —
-              дори ние не можем да разберем кой как е гласувал.
+              Техническо описание на механизмите, които гарантират пълна анонимност
+              на всеки глас — независимо от намеренията на администраторите.
             </p>
           </div>
-        </div>
-      </section>
-
-      {/* Ключово твърдение */}
-      <section className="border-b-4 border-gray-900 bg-blue-600 px-6 py-8">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-white font-black text-xl md:text-2xl tracking-tight">
-            Вашият Google акаунт никога не се записва в базата данни.
-          </p>
-          <p className="text-blue-200 font-bold text-sm tracking-wider uppercase text-right">
-            Математически гарантирано
-          </p>
         </div>
       </section>
 
@@ -123,21 +110,18 @@ export default function HowItWorksPage() {
                 onClick={() => setActiveStep(activeStep === i ? null : i)}
               >
                 <div className="p-6 flex items-start gap-6">
-                  {/* Номер */}
                   <div className={`text-4xl font-black leading-none flex-shrink-0 w-12 ${
-                    activeStep === i ? 'text-blue-400' : 'text-gray-200'
+                    activeStep === i ? 'text-gray-600' : 'text-gray-200'
                   }`}>
                     {step.number}
                   </div>
 
-                  {/* Икона */}
-                  <div className={`text-2xl flex-shrink-0 w-8 text-center mt-1`}>
+                  <div className="text-2xl flex-shrink-0 w-8 text-center mt-1">
                     {step.icon}
                   </div>
 
-                  {/* Съдържание */}
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-1">
+                    <div className="flex items-center gap-3 mb-1 flex-wrap">
                       <h3 className={`font-black text-lg tracking-tight ${
                         activeStep === i ? 'text-white' : 'text-gray-900'
                       }`}>
@@ -145,7 +129,7 @@ export default function HowItWorksPage() {
                       </h3>
                       <span className={`text-xs font-bold tracking-widest uppercase px-2 py-0.5 ${
                         activeStep === i
-                          ? 'bg-blue-600 text-white'
+                          ? 'bg-white text-gray-900'
                           : 'bg-gray-100 text-gray-500'
                       }`}>
                         {step.technical}
@@ -157,10 +141,9 @@ export default function HowItWorksPage() {
                       {step.description}
                     </p>
 
-                    {/* Разгънато детайлно обяснение */}
                     {activeStep === i && (
-                      <div className="mt-4 border-l-4 border-blue-500 pl-4">
-                        <p className="text-blue-300 text-xs font-black tracking-widest uppercase mb-1">
+                      <div className="mt-4 border-l-4 border-gray-500 pl-4">
+                        <p className="text-gray-400 text-xs font-black tracking-widest uppercase mb-1">
                           Технически детайл
                         </p>
                         <p className="text-gray-400 text-sm font-bold font-mono leading-relaxed">
@@ -170,9 +153,8 @@ export default function HowItWorksPage() {
                     )}
                   </div>
 
-                  {/* Стрелка */}
-                  <div className={`flex-shrink-0 text-lg font-black transition-transform ${
-                    activeStep === i ? 'rotate-180 text-blue-400' : 'text-gray-300'
+                  <div className={`flex-shrink-0 text-lg font-black transition-transform duration-200 ${
+                    activeStep === i ? 'rotate-180 text-gray-400' : 'text-gray-300'
                   }`}>
                     ↓
                   </div>
@@ -182,7 +164,7 @@ export default function HowItWorksPage() {
           </div>
         </div>
 
-        {/* Визуална схема */}
+        {/* Схема на данните — светла */}
         <div className="mb-20">
           <div className="flex items-center gap-4 mb-10 pb-4 border-b-2 border-gray-900">
             <h2 className="text-xs font-black text-gray-900 tracking-widest uppercase">
@@ -191,87 +173,73 @@ export default function HowItWorksPage() {
             <div className="flex-1 h-px bg-gray-200" />
           </div>
 
-          <div className="border-2 border-gray-900 p-8 bg-slate-900">
+          <div className="border-2 border-gray-900 p-8 bg-white">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
 
               {/* Вход */}
-              <div className="border-2 border-blue-500 p-5">
-                <p className="text-blue-400 text-xs font-black tracking-widest uppercase mb-4 border-b border-blue-800 pb-2">
-                  ВХОД (временно в паметта)
+              <div className="border-2 border-gray-900 p-5">
+                <p className="text-gray-900 text-xs font-black tracking-widest uppercase mb-4 border-b-2 border-gray-900 pb-2">
+                  ВХОД — временно в паметта
                 </p>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {[
-                    { label: 'Google ID', value: '10823456...', keep: false },
-                    { label: 'Salt на анкетата', value: 'a3f8c2d1...', keep: false },
-                    { label: 'Pepper (таен)', value: '••••••••', keep: false },
+                    { label: 'Google ID', value: '10823456...' },
+                    { label: 'Salt на анкетата', value: 'a3f8c2d1...' },
+                    { label: 'Pepper (таен ключ)', value: '••••••••' },
                   ].map((item) => (
                     <div key={item.label} className="flex justify-between items-center">
-                      <span className="text-gray-400 text-xs font-bold">{item.label}</span>
-                      <span className="text-white text-xs font-mono font-black">{item.value}</span>
+                      <span className="text-gray-500 text-xs font-bold">{item.label}</span>
+                      <span className="text-gray-900 text-xs font-mono font-black">{item.value}</span>
                     </div>
                   ))}
                 </div>
-                <div className="mt-4 pt-3 border-t border-gray-700">
-                  <p className="text-red-400 text-xs font-bold">✕ Никога не се записва</p>
+                <div className="mt-4 pt-3 border-t-2 border-gray-100">
+                  <p className="text-red-600 text-xs font-black">✕ Никога не се записва</p>
                 </div>
               </div>
 
-              {/* Хеш функция */}
-              <div className="border-2 border-yellow-500 p-5 flex flex-col items-center justify-center">
-                <p className="text-yellow-400 text-xs font-black tracking-widest uppercase mb-3">
+              {/* SHA-256 */}
+              <div className="border-2 border-gray-900 border-l-0 p-5 flex flex-col items-center justify-center bg-gray-50">
+                <p className="text-gray-900 text-xs font-black tracking-widest uppercase mb-3">
                   SHA-256
                 </p>
-                <div className="text-4xl mb-3">⟶</div>
-                <p className="text-gray-400 text-xs font-bold text-center">
-                  Еднопосочна<br />математическа функция
+                <div className="text-3xl font-black text-gray-400 mb-3">⟶</div>
+                <p className="text-gray-500 text-xs font-bold text-center leading-relaxed">
+                  Еднопосочна<br />криптографска функция
                 </p>
-                <div className="mt-3 border border-yellow-700 px-3 py-1">
-                  <p className="text-yellow-400 text-xs font-mono">необратима</p>
+                <div className="mt-3 border-2 border-gray-300 px-3 py-1">
+                  <p className="text-gray-500 text-xs font-mono font-black">необратима</p>
                 </div>
               </div>
 
               {/* Изход */}
-              <div className="border-2 border-gray-600 p-5">
-                <p className="text-gray-400 text-xs font-black tracking-widest uppercase mb-4 border-b border-gray-700 pb-2">
-                  БАЗА ДАННИ (записано)
+              <div className="border-2 border-gray-900 border-l-0 p-5">
+                <p className="text-gray-900 text-xs font-black tracking-widest uppercase mb-4 border-b-2 border-gray-900 pb-2">
+                  БАЗА ДАННИ — записано
                 </p>
                 <div className="space-y-3">
                   <div>
-                    <p className="text-gray-500 text-xs font-bold mb-1">used_hashes таблица:</p>
-                    <p className="text-green-400 text-xs font-mono font-black">e3b0c44298fc1c14...</p>
+                    <p className="text-gray-400 text-xs font-bold mb-1 uppercase tracking-wider">used_hashes</p>
+                    <p className="text-gray-900 text-xs font-mono font-black">e3b0c44298fc1c14...</p>
                   </div>
-                  <div className="border-t border-gray-700 pt-3">
-                    <p className="text-gray-500 text-xs font-bold mb-1">votes таблица:</p>
-                    <p className="text-white text-xs font-mono">choice: "ДА"</p>
-                    <p className="text-white text-xs font-mono">region: "София"</p>
-                    <p className="text-white text-xs font-mono">trustLevel: 3</p>
+                  <div className="border-t-2 border-gray-100 pt-3">
+                    <p className="text-gray-400 text-xs font-bold mb-1 uppercase tracking-wider">votes</p>
+                    <p className="text-gray-900 text-xs font-mono">choice: "ДА"</p>
                   </div>
                 </div>
-                <div className="mt-4 pt-3 border-t border-gray-700">
-                  <p className="text-green-400 text-xs font-bold">✓ Без лични данни</p>
+                <div className="mt-4 pt-3 border-t-2 border-gray-100">
+                  <p className="text-green-600 text-xs font-black">✓ Без лични данни</p>
                 </div>
               </div>
 
             </div>
 
-            <div className="mt-6 border-t border-gray-700 pt-4">
+            <div className="mt-6 border-t-2 border-gray-100 pt-4">
               <p className="text-gray-500 text-xs font-bold text-center">
-                Таблиците <span className="text-white">used_hashes</span> и <span className="text-white">votes</span> нямат обща колона — не могат да се свържат по никакъв начин.
+                Таблиците <span className="text-gray-900 font-black">used_hashes</span> и <span className="text-gray-900 font-black">votes</span> не споделят обща колона — физически не могат да бъдат свързани.
               </p>
             </div>
           </div>
-        </div>
-
-        {/* Нива на доверие */}
-        <div className="mb-20">
-          <div className="flex items-center gap-4 mb-10 pb-4 border-b-2 border-gray-900">
-            <h2 className="text-xs font-black text-gray-900 tracking-widest uppercase">
-              Нива на верификация
-            </h2>
-            <div className="flex-1 h-px bg-gray-200" />
-          </div>
-
-          
         </div>
 
         {/* Въпроси и отговори */}
@@ -286,25 +254,25 @@ export default function HowItWorksPage() {
           <div className="space-y-4">
             {[
               {
-                q: 'Може ли Социолог.bg да разбере как съм гласувал?',
-                a: 'Не. Гласът ви и хешът ви са в отделни таблици без никаква връзка. Дори ние — администраторите — не можем технически да свържем конкретен глас с конкретен потребител.',
+                q: 'Може ли Социолог.bg да установи как съм гласувал?',
+                a: 'Не. Гласът и хешът се съхраняват в отделни таблици без каквато и да е обща колона. Дори администраторите с пълен достъп до базата данни не могат технически да свържат конкретен глас с конкретен потребител.',
               },
               {
-                q: 'Какво се случва с Google ID-то ми?',
-                a: 'Google ID-то ви се използва само в паметта на сървъра, за да генерира хеша. Веднага след това се изтрива от паметта. В базата данни постъпва единствено хешът — необратим криптографски отпечатък.',
+                q: 'Какво се случва с Google ID-то ми след гласуване?',
+                a: 'Google ID-то се зарежда временно в паметта на сървъра единствено за генериране на хеша. Веднага след изчислението то се освобождава от паметта. В базата данни постъпва само хешът — криптографски отпечатък без обратна връзка към оригинала.',
               },
               {
-                q: 'Ако някой хакне базата данни, може ли да разбере гласовете ми?',
-                a: 'Не. Дори при пълен достъп до базата данни, нападателят ще вижда само хешове и анонимни гласове. SHA-256 е математически необратим — от "e3b0c44..." не може да се извлече оригиналният Google ID.',
+                q: 'Ако базата данни бъде компрометирана, застрашена ли е анонимността ми?',
+                a: 'Не. При пълен достъп до базата данни нападателят ще открие само хешове и анонимни гласове. SHA-256 е математически необратим — от стойността "e3b0c44..." е невъзможно да се възстанови оригиналният Google ID.',
               },
               {
-                q: 'Защо изобщо ви трябва Google ID ако не го записвате?',
-                a: 'Използваме го само за да генерираме уникален хеш, който предотвратява двойното гласуване. Нужен ни е за еднократно изчисление — след което го забравяме напълно.',
-              }
+                q: 'Защо е необходим Google ID, ако не го съхранявате?',
+                a: 'Google ID служи като уникален входен параметър за генериране на хеша, който предотвратява двойното гласуване. Необходим е за еднократно изчисление — след приключването му не се съхранява никъде.',
+              },
             ].map((faq, i) => (
               <div key={i} className="border-2 border-gray-900 p-6">
                 <div className="flex gap-4">
-                  <span className="text-blue-600 font-black text-lg flex-shrink-0">?</span>
+                  <span className="text-gray-300 font-black text-2xl flex-shrink-0 leading-none">?</span>
                   <div>
                     <h3 className="font-black text-gray-900 mb-2">{faq.q}</h3>
                     <p className="text-gray-600 font-bold text-sm leading-relaxed">{faq.a}</p>
@@ -315,21 +283,48 @@ export default function HowItWorksPage() {
           </div>
         </div>
 
-        {/* Заключение */}
-        <div className="border-4 border-gray-900 p-8 bg-slate-900">
-          <div className="max-w-3xl">
-            <p className="text-blue-400 text-xs font-black tracking-widest uppercase mb-4">
-              Нашето обещание
+        {/* GitHub + Заключение */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+
+          {/* GitHub */}
+          <div className="border-2 border-gray-900 p-6 flex flex-col justify-between">
+            <div>
+              <p className="text-xs font-black text-gray-400 tracking-widest uppercase mb-3">
+                Отворен код
+              </p>
+              <h3 className="font-black text-gray-900 text-lg mb-2">Прегледайте сорс кода</h3>
+              <p className="text-gray-500 text-sm font-bold leading-relaxed">
+                Цялата логика за анонимизация е публично достъпна. Можете да проверите сами как работи системата.
+              </p>
+            </div>
+            <a
+              href="https://github.com/YOUR_REPO"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-flex items-center gap-2 border-2 border-gray-900 px-4 py-3 text-xs font-black tracking-widest uppercase hover:bg-gray-900 hover:text-white transition-colors group"
+            >
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+              </svg>
+              GitHub Repository
+            </a>
+          </div>
+
+          {/* Заключение */}
+          <div className="md:col-span-2 border-2 border-gray-900 p-8 bg-slate-900">
+            <p className="text-gray-500 text-xs font-black tracking-widest uppercase mb-4">
+              Архитектурен принцип
             </p>
             <h2 className="text-white font-black text-3xl md:text-4xl leading-tight mb-6 tracking-tight">
-              Анонимността не е<br />просто обещание —<br />тя е математика.
+              Анонимността не е<br />политика — тя е<br />математика.
             </h2>
-            <p className="text-gray-400 font-bold leading-relaxed">
-              Проектирахме системата така, че дори да искахме да разберем кой как е гласувал —
-              технически не можем. Не защото сме добросъвестни, а защото архитектурата на системата
-              го прави невъзможно.
+            <p className="text-gray-400 font-bold leading-relaxed text-sm">
+              Системата е проектирана така, че установяването на самоличността на гласуващ
+              е математически невъзможно — независимо от намеренията или правомощията
+              на когото и да е с достъп до инфраструктурата.
             </p>
           </div>
+
         </div>
 
       </main>

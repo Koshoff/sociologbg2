@@ -58,7 +58,7 @@ export default function Footer() {
                 { href: '/about', label: 'За Социолог.bg' },
                 { href: '/mission', label: 'Нашата мисия' },
                 { href: '/privacy', label: 'Поверителност' },
-                { href: '/how-it-works', label: 'Как работи анонимното гласуване' },
+                { href: '/how-it-works', label: 'Как работи' },
               ].map(link => (
                 <Link key={link.href} href={link.href}>
                   <p className="text-xs font-bold text-gray-400 hover:text-white uppercase tracking-wider transition-colors">{link.label}</p>
