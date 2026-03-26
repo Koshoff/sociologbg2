@@ -271,24 +271,7 @@ export default function HowItWorksPage() {
             <div className="flex-1 h-px bg-gray-200" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {trustLevels.map((level, i) => (
-              <div key={i} className={`border-2 ${level.color.split(' ')[0]} p-6`}>
-                <div className={`inline-block px-2 py-1 text-xs font-black tracking-widest ${level.badgeColor} mb-4`}>
-                  {level.badge}
-                </div>
-                <h3 className={`font-black text-sm tracking-widest uppercase mb-3 ${level.color.split(' ')[1]}`}>
-                  {level.level}
-                </h3>
-                <p className="text-gray-600 text-sm font-bold leading-relaxed mb-4">
-                  {level.description}
-                </p>
-                <div className="border-t border-gray-100 pt-3">
-                  <p className="text-gray-400 text-xs font-bold">{level.weight}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          
         </div>
 
         {/* Въпроси и отговори */}
