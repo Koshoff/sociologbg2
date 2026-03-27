@@ -27,15 +27,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-      <Script 
+      <body className={`${roboto.variable} antialiased`}>
+  {children}
+  <Script 
     src="https://accounts.google.com/gsi/client" 
     strategy="beforeInteractive"
   />
-      </body>
+</body>
       
     </html>
     
