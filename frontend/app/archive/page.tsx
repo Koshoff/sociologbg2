@@ -69,7 +69,7 @@ export default function ArchivePage() {
 
           {/* Лява колона */}
           <aside className="col-span-3 hidden lg:block space-y-4">
-            <div className="border-2 border-gray-900 p-5">
+            <div className="border border-gray-900 p-5">
               <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-4">
                 Статистика
               </p>
@@ -93,14 +93,14 @@ export default function ArchivePage() {
               </div>
             </div>
 
-            <div className="border-2 border-dashed border-gray-200 p-5">
+            <div className="border border-dashed border-gray-200 p-5">
               <p className="text-xs font-bold text-gray-300 tracking-widest uppercase text-center mb-4">
                 Реклама
               </p>
               <div className="h-48 bg-gray-50 border border-gray-100" />
             </div>
 
-            <div className="border-2 border-gray-900 p-5">
+            <div className="border border-gray-900 p-5">
               <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-4">
                 Категории
               </p>
@@ -133,7 +133,7 @@ export default function ArchivePage() {
             )}
 
             {!loading && archived.length === 0 && (
-              <div className="border-2 border-dashed border-gray-200 p-12 text-center">
+              <div className="border border-dashed border-gray-200 p-12 text-center">
                 <p className="text-gray-400 font-bold tracking-wider uppercase text-sm">
                   Няма приключили проучвания
                 </p>
@@ -148,7 +148,7 @@ export default function ArchivePage() {
                 return (
                   <div
                     key={survey.id}
-                    className={`border-2 border-gray-900 p-6 shadow-md transition-all duration-150 ${
+                    className={`border border-gray-900 p-6 shadow-md transition-all duration-150 ${
                       visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
                     }`}
                     style={{ transitionDelay: `${index * 100}ms` }}
@@ -243,7 +243,7 @@ export default function ArchivePage() {
 
           {/* Дясна колона */}
           <aside className="col-span-3 hidden lg:block space-y-4">
-            <div className="border-2 border-gray-900 p-5">
+            <div className="border border-gray-900 p-5">
               <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-4">
                 Последни резултати
               </p>
@@ -263,14 +263,14 @@ export default function ArchivePage() {
               })}
             </div>
 
-            <div className="border-2 border-dashed border-gray-200 p-5">
+            <div className="border border-dashed border-gray-200 p-5">
               <p className="text-xs font-bold text-gray-300 tracking-widest uppercase text-center mb-4">
                 Реклама
               </p>
               <div className="h-48 bg-gray-50 border border-gray-100" />
             </div>
 
-            <div className="border-2 border-gray-900 p-5">
+            <div className="border border-gray-900 p-5">
               <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-3">
                 За платформата
               </p>
