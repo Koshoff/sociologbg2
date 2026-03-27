@@ -55,8 +55,7 @@ export default function Footer() {
             </p>
             <div className="space-y-2">
               {[
-                { href: '/about', label: 'За Социолог.bg' },
-                { href: '/mission', label: 'Нашата мисия' },
+                { href: '/about-us', label: 'За Социолог.bg' },
                 { href: '/privacy', label: 'Поверителност' },
                 { href: '/how-it-works', label: 'Как работи' },
               ].map(link => (
