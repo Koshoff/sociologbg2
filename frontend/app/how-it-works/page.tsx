@@ -298,7 +298,7 @@ export default function HowItWorksPage() {
               </p>
             </div>
             <a
-              href="https://github.com/YOUR_REPO"
+              href="https://github.com/Koshoff/sociologbg2"
               target="_blank"
               rel="noopener noreferrer"
               className="mt-6 inline-flex items-center gap-2 border-2 border-gray-900 px-4 py-3 text-xs font-black tracking-widest uppercase hover:bg-gray-900 hover:text-white transition-colors group"
