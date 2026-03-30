@@ -31,6 +31,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       VOTE_HASH_PEPPER: ${VOTE_HASH_PEPPER}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      RESEND_API_KEY: ${RESEND_APY_KEY}
     depends_on:
       - db
     networks:
