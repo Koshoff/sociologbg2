@@ -37,9 +37,7 @@ services:
       - db
     networks:
       - survey_network
-  app:
-    cors:
-      allowed-origins: http://localhost:3000,https://sociolog.bg,https://www.sociolog.bg,https://sociolog.online,https://www.sociolog.online
+
 
   # ─── Next.js Frontend ─────────────────────────────────────
   frontend:

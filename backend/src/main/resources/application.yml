@@ -29,7 +29,7 @@ app:
   vote:
     hash-pepper: ${VOTE_HASH_PEPPER}
   cors:
-    allowed-origins: http://localhost:3000
+    allowed-origins: http://localhost:3000, https://sociolog.online,https://www.sociolog.online,https://sociolog.bg,https://www.sociolog.bg
   anthropic:
     api-key: ${ANTHROPIC_API_KEY}
   google:
