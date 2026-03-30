@@ -40,7 +40,6 @@ public class VoteController {
                     surveyId,
                     request.getChoice(),
                     request.getIdentifier(),
-                    request.getTrustLevel(),
                     request.getRegion()
             );
 

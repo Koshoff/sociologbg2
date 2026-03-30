@@ -32,8 +32,6 @@ public class UsedHash {
     @JoinColumn(name = "survey_id", nullable = false)
     private Survey survey;
 
-    @Column(nullable = false)
-    private Integer trustLevel;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -41,10 +39,10 @@ public class UsedHash {
     public UsedHash() {}
 
     @Builder
-    public UsedHash(String hash, Survey survey, Integer trustLevel) {
+    public UsedHash(String hash, Survey survey) {
         this.hash = hash;
         this.survey = survey;
-        this.trustLevel = trustLevel;
+        
     }
 }
 

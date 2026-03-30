@@ -35,8 +35,8 @@ public class VoteService {
      * всички промени в базата се отменят (rollback).
      */
     @Transactional
-    public Vote castVote(UUID surveyId, String choice, String identifier,
-                         Integer trustLevel, String region) {
+    public Vote castVote(UUID surveyId, String choice, String identifier
+                         , String region) {
 
         Survey survey = surveyService.getById(surveyId);
 

@@ -16,7 +16,6 @@ public class VoteResponse {
     private UUID id;
     private UUID surveyId;
     private String choice;
-    private Integer trustLevel;
     private String region;
     private LocalDateTime createdAt;
 
@@ -25,7 +24,6 @@ public class VoteResponse {
         response.setId(vote.getId());
         response.setSurveyId(vote.getSurvey().getId());
         response.setChoice(vote.getChoice());
-        response.setTrustLevel(vote.getTrustLevel());
         response.setRegion(vote.getRegion());
         response.setCreatedAt(vote.getCreatedAt());
         return response;

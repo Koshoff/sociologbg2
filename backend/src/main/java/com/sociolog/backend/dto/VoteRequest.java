@@ -24,10 +24,7 @@ public class VoteRequest {
     @NotBlank(message = "Identifier is required")
     private String identifier;
 
-    @NotNull(message = "Trust level is required")
-    @Min(value = 1, message = "Trust level must be between 1 and 3")
-    @Max(value = 3, message = "Trust level must be between 1 and 3")
-    private Integer trustLevel;
+
 
     /**
      * Само регион — frontend-ът определя региона от IP-то,

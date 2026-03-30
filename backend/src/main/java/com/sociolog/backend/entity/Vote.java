@@ -28,8 +28,7 @@ public class Vote {
     @Column(nullable = false, length = 100)
     private String choice;
 
-    @Column(nullable = false)
-    private Integer trustLevel;
+
 
     @Column(length = 100)
     private String region;
@@ -43,10 +42,10 @@ public class Vote {
     // Builder конструктор — само полетата които задаваме ръчно
     // createdAt се задава автоматично, затова не е тук
     @Builder
-    public Vote(Survey survey, String choice, Integer trustLevel, String region) {
+    public Vote(Survey survey, String choice, String region) {
         this.survey = survey;
         this.choice = choice;
-        this.trustLevel = trustLevel;
+
         this.region = region;
     }
 }

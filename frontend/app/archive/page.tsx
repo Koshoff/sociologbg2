@@ -20,9 +20,6 @@ interface ArchivedSurvey {
   totalVotes: number;
   results: {
     total: Record<string, number>;
-    verified: Record<string, number>;
-    partial: Record<string, number>;
-    anonymous: Record<string, number>;
   };
 }
 
@@ -82,12 +79,6 @@ export default function ArchivePage() {
                   <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Общо гласове</span>
                   <span className="text-lg font-black text-gray-900">
                     {archived.reduce((sum, a) => sum + a.totalVotes, 0)}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Анонимни</span>
-                  <span className="text-lg font-black text-gray-900">
-                    {archived.reduce((sum, a) => sum + Object.values(a.results.anonymous).reduce((x, y) => x + y, 0), 0)}
                   </span>
                 </div>
               </div>
@@ -219,17 +210,9 @@ export default function ArchivePage() {
 
                     {/* Верификация и дата */}
                     <div className="border-t-2 border-gray-100 pt-3 flex justify-between items-center">
-                      <div className="flex gap-4">
-                        {[
-                          { label: 'ВЕР', value: Object.values(results.verified).reduce((a, b) => a + b, 0), color: 'border-green-500' },
-                          { label: 'ЧАС', value: Object.values(results.partial).reduce((a, b) => a + b, 0), color: 'border-yellow-500' },
-                          { label: 'АНО', value: Object.values(results.anonymous).reduce((a, b) => a + b, 0), color: 'border-gray-300' },
-                        ].map((item) => (
-                          <div key={item.label} className={`border-l-2 ${item.color} pl-2`}>
-                            <p className="text-sm font-black text-gray-900">{item.value}</p>
-                            <p className="text-xs font-bold text-gray-400">{item.label}</p>
-                          </div>
-                        ))}
+                      <div className="border-l-2 border-green-500 pl-2">
+                        <p className="text-sm font-black text-gray-900">{totalVotes}</p>
+                        <p className="text-xs font-bold text-gray-400">ВЕР</p>
                       </div>
                       <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
                         {new Date(survey.closesAt).toLocaleDateString('bg-BG')}
