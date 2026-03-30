@@ -9,10 +9,23 @@ export default function Footer() {
   const [contactMessage, setContactMessage] = useState('');
   const [contactSent, setContactSent] = useState(false);
 
-  const handleContact = (e: React.FormEvent) => {
-    e.preventDefault();
-    setContactSent(true);
-  };
+  
+  
+  const handleContact = async (e: React.FormEvent) => {
+  e.preventDefault();
+  
+  const res = await fetch('/api/contact', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: contactName,
+      email: contactEmail,
+      message: contactMessage,
+    }),
+  });
+
+  if (res.ok) setContactSent(true);
+};
 
   return (
     <footer className="bg-slate-900 mt-12 font-sans">
