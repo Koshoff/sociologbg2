@@ -82,8 +82,7 @@ export default function SurveyPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           choice: selectedChoice,
-          identifier: response.credential,
-          trustLevel: 3,
+          identifier: response.credential
         }),
       });
 
@@ -318,25 +317,7 @@ export default function SurveyPage() {
               </p>
             )}
 
-            {totalVotes > 0 && results && (
-              <div className="border-t-2 border-gray-900 pt-4">
-                <p className="text-xs font-black text-gray-400 tracking-widest uppercase mb-3">
-                  По верификация
-                </p>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { label: 'ВЕРИФИЦИРАНИ', value: Object.values(results.verified).reduce((a, b) => a + b, 0), color: 'border-green-500' },
-                    { label: 'ЧАСТИЧНИ', value: Object.values(results.partial).reduce((a, b) => a + b, 0), color: 'border-yellow-500' },
-                    { label: 'АНОНИМНИ', value: Object.values(results.anonymous).reduce((a, b) => a + b, 0), color: 'border-gray-300' },
-                  ].map((item) => (
-                    <div key={item.label} className={`border-l-4 ${item.color} pl-2`}>
-                      <p className="text-lg font-black text-gray-900">{item.value}</p>
-                      <p className="text-xs font-bold text-gray-400 tracking-wider">{item.label}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            
           </div>
         </div>
       </main>
