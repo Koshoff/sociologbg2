@@ -349,15 +349,39 @@ export default function SurveyPage() {
                 </p>
               </div>
             ) : (
-              <div className="border-2 border-green-500 p-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-6 h-6 bg-green-500 flex items-center justify-center">
-                    <span className="text-white text-xs font-black">✓</span>
-                  </div>
-                  <p className="font-black text-gray-900 uppercase tracking-wider">Гласът е записан!</p>
-                </div>
-                <p className="text-sm text-gray-500 font-bold">Благодарим за участието.</p>
-              </div>
+              <div>
+    <div className="border-2 border-green-500 p-4 mb-4">
+      <div className="flex items-center gap-3 mb-2">
+        <div className="w-6 h-6 bg-green-500 flex items-center justify-center">
+          <span className="text-white text-xs font-black">✓</span>
+        </div>
+        <p className="font-black text-gray-900 uppercase tracking-wider">Гласът е записан!</p>
+      </div>
+      <p className="text-sm text-gray-500 font-bold">Благодарим за участието.</p>
+    </div>
+
+    {googleToken && (
+      <div className="border-2 border-blue-600 p-4">
+        <p className="text-xs font-black text-blue-600 uppercase tracking-wider mb-3">
+          💬 Какво стои зад твоя избор?
+        </p>
+        <textarea
+          value={commentText}
+          onChange={e => setCommentText(e.target.value)}
+          placeholder="Сподели мнението си..."
+          rows={3}
+          className="w-full border-2 border-gray-900 px-4 py-3 text-sm font-bold focus:outline-none focus:border-blue-600 resize-none"
+        />
+        <button
+          onClick={() => submitComment()}
+          disabled={!commentText.trim()}
+          className="mt-2 w-full bg-blue-600 text-white py-2 text-xs font-black tracking-widest uppercase hover:bg-blue-700 disabled:opacity-40 transition-colors"
+        >
+          СПОДЕЛИ
+        </button>
+      </div>
+    )}
+  </div>
             )}
           </div>
 
