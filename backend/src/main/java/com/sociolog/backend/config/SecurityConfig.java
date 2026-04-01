@@ -47,6 +47,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,  "/api/surveys/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/votes/**").permitAll()
                         .requestMatchers(HttpMethod.GET,  "/api/votes/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/comments/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/comments/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/votes/top-surveys").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/articles/with-active-surveys").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -123,7 +125,7 @@ public class SecurityConfig {
                 "https://www.sociolog.bg"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Content-Type", "Authorization"));
-        config.setAllowCredentials(true);  // ← добави това
+        config.setAllowCredentials(true);
         config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

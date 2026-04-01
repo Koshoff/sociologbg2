@@ -56,6 +56,19 @@ public class HashUtil {
     }
 
     /**
+     * Генерира постоянен анонимен хеш за потребител.
+     * Използва се за коментари - един и същи потребител
+     * винаги получава един и същи хеш.
+     *
+     * @param googleId  Google ID на потребителя
+     * @return          64-символен hexadecimal стринг
+     */
+    public String generateAuthorHash(String googleId) {
+        String input = googleId + pepper;
+        return sha256(input);
+    }
+
+    /**
      * Конвертира byte[] към hexadecimal стринг.
      * Например: [0x3f, 0xa2] → "3fa2"
      */
