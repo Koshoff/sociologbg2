@@ -17,6 +17,8 @@ const [comments, setComments] = useState<any[]>([]);
 const [commentText, setCommentText] = useState('');
 const [replyTo, setReplyTo] = useState<{id: string, hash: string} | null>(null);
 const [loadingComments, setLoadingComments] = useState(false);
+const [showCommentLogin, setShowCommentLogin] = useState(false);
+
 
 declare global {
   interface Window {
@@ -77,6 +79,36 @@ export default function SurveyPage() {
 
     return () => clearInterval(interval);
   }, [showGooglePopup]);
+
+  useEffect(() => {
+    if (!showCommentLogin) return;
+
+    const interval = setInterval(() => {
+        if (window.google) {
+            clearInterval(interval);
+            window.google.accounts.id.initialize({
+                client_id: GOOGLE_CLIENT_ID,
+                callback: (response: any) => {
+                    setGoogleToken(response.credential);
+                    setShowCommentLogin(false);
+                },
+                auto_select: false,
+            });
+            window.google.accounts.id.renderButton(
+                document.getElementById('comment-signin-button'),
+                {
+                    theme: 'outline',
+                    size: 'large',
+                    width: '100%',
+                    text: 'continue_with',
+                    locale: 'bg',
+                }
+            );
+        }
+    }, 100);
+
+    return () => clearInterval(interval);
+}, [showCommentLogin]);
 
   const handleGoogleResponse = async (response: any) => {
     if (!selectedChoice) return;
@@ -406,10 +438,20 @@ export default function SurveyPage() {
           </div>
         </div>
       ) : (
-        <div className="border-2 border-dashed border-gray-200 p-6 text-center mb-8">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-            Гласувай с Google за да коментираш
+        <div className="border-2 border-gray-900 p-6 mb-8">
+          <p className="text-xs font-black text-gray-400 uppercase tracking-wider mb-4 text-center">
+            Влез с Google за да коментираш
           </p>
+          {!showCommentLogin ? (
+            <button
+              onClick={() => setShowCommentLogin(true)}
+              className="w-full bg-slate-900 text-white py-2 text-xs font-black tracking-widest uppercase hover:bg-blue-600 transition-colors"
+            >
+              ВЛЕЗ С GOOGLE
+            </button>
+          ) : (
+            <div id="comment-signin-button" className="flex justify-center" />
+          )}
         </div>
       )}
 
