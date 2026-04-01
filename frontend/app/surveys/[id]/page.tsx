@@ -38,6 +38,12 @@ export default function SurveyPage() {
   const [error, setError] = useState<string | null>(null);
   const [visible, setVisible] = useState(false);
   const [showGooglePopup, setShowGooglePopup] = useState(false);
+  const [googleToken, setGoogleToken] = useState<string | null>(null);
+  const [comments, setComments] = useState<any[]>([]);
+  const [commentText, setCommentText] = useState('');
+  const [replyTo, setReplyTo] = useState<{id: string, hash: string} | null>(null);
+  const [loadingComments, setLoadingComments] = useState(false);
+  const [showCommentLogin, setShowCommentLogin] = useState(false);
 
   useEffect(() => {
     const voted = localStorage.getItem(`voted_${id}`);
