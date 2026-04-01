@@ -11,6 +11,13 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
 const CHOICES = ['ДА', 'НЕ', 'ВЪЗДЪРЖАЛ СЕ'];
 
+
+const [googleToken, setGoogleToken] = useState<string | null>(null);
+const [comments, setComments] = useState<any[]>([]);
+const [commentText, setCommentText] = useState('');
+const [replyTo, setReplyTo] = useState<{id: string, hash: string} | null>(null);
+const [loadingComments, setLoadingComments] = useState(false);
+
 declare global {
   interface Window {
     google: any;
@@ -41,6 +48,7 @@ export default function SurveyPage() {
 
     getResults(id).then(setResults).catch(() => {});
     setTimeout(() => setVisible(true), 100);
+    loadComments();
   }, [id]);
 
   useEffect(() => {
@@ -75,6 +83,7 @@ export default function SurveyPage() {
     setVoting(true);
     setError(null);
     setShowGooglePopup(false);
+    setGoogleToken(response.credential);
 
     try {
       const res = await fetch(`${API_URL}/api/votes/${id}`, {
@@ -105,6 +114,45 @@ export default function SurveyPage() {
 
   const total = results?.total || {};
   const totalVotes = Object.values(total).reduce((a, b) => a + b, 0);
+
+  const loadComments = async () => {
+    setLoadingComments(true);
+    try {
+        const res = await fetch(`${API_URL}/api/comments/survey/${id}`);
+        const data = await res.json();
+        setComments(data);
+    } catch {}
+    finally { setLoadingComments(false); }
+};
+
+  const submitComment = async (parentId?: string) => {
+      if (!commentText.trim() || !googleToken) return;
+      
+      try {
+          const res = await fetch(`${API_URL}/api/comments/survey/${id}`, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${googleToken}`
+              },
+              body: JSON.stringify({
+                  content: commentText,
+                  parentId: parentId || null
+              })
+          });
+          
+          if (res.ok) {
+              setCommentText('');
+              setReplyTo(null);
+              loadComments();
+          }
+      } catch {}
+  };
+
+  const upvoteComment = async (commentId: string) => {
+      await fetch(`${API_URL}/api/comments/${commentId}/upvote`, { method: 'POST' });
+      loadComments();
+  };
 
   if (loading) return (
     <div className="min-h-screen bg-white font-sans">
@@ -321,6 +369,122 @@ export default function SurveyPage() {
           </div>
         </div>
       </main>
+      {/* Коментари */}
+    <section className="max-w-3xl mx-auto px-6 pb-12">
+      <div className="border-b-2 border-gray-900 pb-2 mb-6 flex justify-between items-center">
+        <p className="text-xs font-black text-gray-900 tracking-widest uppercase">
+          Дискусия · {comments.length} коментара
+        </p>
+      </div>
+
+      {/* Форма за коментар */}
+      {googleToken ? (
+        <div className="mb-8">
+          <textarea
+            value={commentText}
+            onChange={e => setCommentText(e.target.value)}
+            placeholder={replyTo ? `Отговаряш на ${replyTo.hash.slice(0, 8)}...` : 'Напиши коментар...'}
+            rows={3}
+            className="w-full border-2 border-gray-900 px-4 py-3 text-sm font-bold focus:outline-none focus:border-blue-600 resize-none"
+          />
+          <div className="flex gap-2 mt-2">
+            <button
+              onClick={() => submitComment(replyTo?.id)}
+              disabled={!commentText.trim()}
+              className="bg-slate-900 text-white px-6 py-2 text-xs font-black tracking-widest uppercase hover:bg-blue-600 disabled:opacity-40 transition-colors"
+            >
+              ИЗПРАТИ
+            </button>
+            {replyTo && (
+              <button
+                onClick={() => setReplyTo(null)}
+                className="border-2 border-gray-900 px-4 py-2 text-xs font-black tracking-widest uppercase hover:bg-gray-50 transition-colors"
+              >
+                ОТКАЖИ
+              </button>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="border-2 border-dashed border-gray-200 p-6 text-center mb-8">
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+            Гласувай с Google за да коментираш
+          </p>
+        </div>
+      )}
+
+      {/* Списък коментари */}
+      {loadingComments ? (
+        <div className="space-y-3">
+          {[1, 2].map(i => <div key={i} className="h-20 bg-gray-50 animate-pulse" />)}
+        </div>
+      ) : comments.length === 0 ? (
+        <div className="border-2 border-dashed border-gray-200 p-8 text-center">
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+            Няма коментари още. Бъди първият!
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {comments.map(comment => (
+            <div key={comment.id} className="border-2 border-gray-900 p-4"
+              style={{ boxShadow: '4px -4px 0px rgba(0,0,0,0.08)' }}
+            >
+              <div className="flex justify-between items-start mb-2">
+                <span className="text-xs font-black text-blue-600 tracking-wider">
+                  #{comment.authorHash.slice(0, 8)}
+                </span>
+                <span className="text-xs font-bold text-gray-400">
+                  {new Date(comment.createdAt).toLocaleDateString('bg-BG')}
+                </span>
+              </div>
+              <p className="text-sm font-bold text-gray-900 mb-3">{comment.content}</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => upvoteComment(comment.id)}
+                  className="text-xs font-black text-gray-400 hover:text-blue-600 uppercase tracking-wider transition-colors"
+                >
+                  ▲ {comment.upvotes}
+                </button>
+                {googleToken && (
+                  <button
+                    onClick={() => setReplyTo({ id: comment.id, hash: comment.authorHash })}
+                    className="text-xs font-black text-gray-400 hover:text-gray-900 uppercase tracking-wider transition-colors"
+                  >
+                    ОТГОВОРИ
+                  </button>
+                )}
+              </div>
+
+              {/* Reply-та */}
+              {comment.replies?.length > 0 && (
+                <div className="mt-3 ml-4 space-y-3 border-l-2 border-gray-100 pl-4">
+                  {comment.replies.map((reply: any) => (
+                    <div key={reply.id}>
+                      <div className="flex justify-between items-start mb-1">
+                        <span className="text-xs font-black text-blue-600 tracking-wider">
+                          #{reply.authorHash.slice(0, 8)}
+                        </span>
+                        <span className="text-xs font-bold text-gray-400">
+                          {new Date(reply.createdAt).toLocaleDateString('bg-BG')}
+                        </span>
+                      </div>
+                      <p className="text-sm font-bold text-gray-900 mb-2">{reply.content}</p>
+                      <button
+                        onClick={() => upvoteComment(reply.id)}
+                        className="text-xs font-black text-gray-400 hover:text-blue-600 uppercase tracking-wider transition-colors"
+                      >
+                        ▲ {reply.upvotes}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
 
       <Footer />
     </div>

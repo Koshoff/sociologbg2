@@ -4,17 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1d8af004-cc82-42ee-bd9c-aa3222c4aa7b" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/sociolog/backend/controller/CommentController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/sociolog/backend/dto/CommentRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/sociolog/backend/dto/CommentResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/sociolog/backend/entity/Comment.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/sociolog/backend/repository/CommentRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/sociolog/backend/service/CommentService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/sociolog/backend/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/sociolog/backend/config/SecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/sociolog/backend/util/HashUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/sociolog/backend/util/HashUtil.java" afterDir="false" />
-    </list>
+    <list default="true" id="1d8af004-cc82-42ee-bd9c-aa3222c4aa7b" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
