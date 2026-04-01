@@ -45,6 +45,16 @@ export default function SurveyPage() {
   const [loadingComments, setLoadingComments] = useState(false);
   const [showCommentLogin, setShowCommentLogin] = useState(false);
 
+  const loadComments = async () => {
+    setLoadingComments(true);
+    try {
+        const res = await fetch(`${API_URL}/api/comments/survey/${id}`);
+        const data = await res.json();
+        setComments(data);
+    } catch {}
+    finally { setLoadingComments(false); }
+};
+
   useEffect(() => {
     const voted = localStorage.getItem(`voted_${id}`);
     if (voted) setHasVoted(true);
@@ -153,15 +163,7 @@ export default function SurveyPage() {
   const total = results?.total || {};
   const totalVotes = Object.values(total).reduce((a, b) => a + b, 0);
 
-  const loadComments = async () => {
-    setLoadingComments(true);
-    try {
-        const res = await fetch(`${API_URL}/api/comments/survey/${id}`);
-        const data = await res.json();
-        setComments(data);
-    } catch {}
-    finally { setLoadingComments(false); }
-};
+  
 
   const submitComment = async (parentId?: string) => {
       if (!commentText.trim() || !googleToken) return;
