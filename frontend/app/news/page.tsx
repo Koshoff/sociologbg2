@@ -16,6 +16,7 @@ interface Article {
   status: string;
   surveyId: string | null;
   surveyTitle: string | null;
+  surveyClosesAt: string | null;
   createdAt: string;
   publishedAt: string | null;
 }
@@ -174,7 +175,7 @@ export default function NewsPage() {
                     <div className="bg-blue-600 px-3 py-1">
                       <span className="text-white text-xs font-black tracking-widest uppercase">FEATURED</span>
                     </div>
-                    {featured.surveyId && (
+                    {featured.surveyId && featured.surveyClosesAt && new Date(featured.surveyClosesAt) > new Date() && (
                       <div className="border border-green-500 px-3 py-1">
                         <span className="text-green-600 text-xs font-black tracking-widest uppercase">● Активна анкета</span>
                       </div>
@@ -212,10 +213,10 @@ export default function NewsPage() {
                       e.currentTarget.style.boxShadow = 'none';
                     }}
                   >
-                    {article.surveyId && (
-                      <span className="text-xs font-black text-green-600 tracking-widest uppercase mb-2 block">
-                        ● Активна анкета
-                      </span>
+                    {article.surveyId && article.surveyClosesAt && new Date(article.surveyClosesAt) > new Date() && (
+                    <span className="text-xs font-black text-green-600 tracking-widest uppercase mb-2 block">
+                      ● Активна анкета
+                    </span>
                     )}
                     <h3 className="font-black text-gray-900 leading-tight mb-2">{article.title}</h3>
                     <p className="text-xs text-gray-500 mb-3 line-clamp-2">{article.summary}</p>
