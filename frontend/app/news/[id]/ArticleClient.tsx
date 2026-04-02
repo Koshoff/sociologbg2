@@ -19,6 +19,7 @@ interface Article {
   surveyId: string | null;
   surveyTitle: string | null;
   createdAt: string;
+  surveyClosesAt: string | null;
   publishedAt: string | null;
 }
 
@@ -58,7 +59,7 @@ export default function ArticleClient({ article }: { article: Article }) {
               <div className="inline-block border border-blue-500 px-3 py-1">
                 <span className="text-blue-400 text-xs font-bold tracking-widest uppercase">НОВИНИ</span>
               </div>
-              {article.surveyId && (
+              {article.surveyId && article.surveyClosesAt && new Date(article.surveyClosesAt) > new Date() && (
                 <div className="inline-block border border-green-500 px-3 py-1">
                   <span className="text-green-400 text-xs font-bold tracking-widest uppercase">● Активна анкета</span>
                 </div>
@@ -113,7 +114,7 @@ export default function ArticleClient({ article }: { article: Article }) {
           <aside className="col-span-12 lg:col-span-4 space-y-6">
 
             {/* Анкета */}
-            {article.surveyId && (
+            {article.surveyId && article.surveyClosesAt && new Date(article.surveyClosesAt) > new Date() && (
               <div className={`border-2 border-blue-600 p-6 transition-all duration-700 delay-300 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                 <p className="text-xs font-black text-blue-600 tracking-widest uppercase mb-3 border-b-2 border-blue-600 pb-2">
                   ● Свързана анкета
