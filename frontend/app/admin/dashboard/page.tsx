@@ -51,6 +51,12 @@ export default function AdminDashboard() {
   const [editMetaTitle, setEditMetaTitle] = useState('');
   const [editMetaDescription, setEditMetaDescription] = useState('');
   const [editSources, setEditSources] = useState('');
+  const [editCategory, setEditCategory] = useState('');
+
+  // Категория за анкета
+  const [surveyCategory, setSurveyCategory] = useState('');
+
+  const CATEGORIES = ['Политика', 'Икономика', 'Социални', 'Здравеопазване'];
 
   // AI генериране
   const [showGenerateForm, setShowGenerateForm] = useState(false);
@@ -106,9 +112,9 @@ export default function AdminDashboard() {
     try {
       await authFetch(`${API_URL}/api/admin/surveys`, {
         method: 'POST',
-        body: JSON.stringify({ title: surveyTitle, description: surveyDescription, closesAt: surveyClosesAt }),
+        body: JSON.stringify({ title: surveyTitle, description: surveyDescription, closesAt: surveyClosesAt, category: surveyCategory }),
       });
-      setSurveyTitle(''); setSurveyDescription(''); setSurveyClosesAt('');
+      setSurveyTitle(''); setSurveyDescription(''); setSurveyClosesAt(''); setSurveyCategory('');
       setShowCreateSurvey(false);
       loadAll();
     } catch { setError('Грешка при създаване'); }
@@ -140,6 +146,7 @@ export default function AdminDashboard() {
     setEditMetaTitle(data.article.metaTitle || '');
     setEditMetaDescription(data.article.metaDescription || '');
     setEditSources(data.article.sources || '');
+    setEditCategory(data.article.category || '');
     setTopic('');
     setShowGenerateForm(false);
   } catch {
@@ -153,14 +160,15 @@ export default function AdminDashboard() {
     if (!generatedArticle) return;
     await authFetch(`${API_URL}/api/articles/admin/${generatedArticle.id}/update`, {
       method: 'PUT',
-      body: JSON.stringify({ 
-            title: editTitle, 
-            content: editContent, 
+      body: JSON.stringify({
+            title: editTitle,
+            content: editContent,
             summary: editSummary,
             slug: editSlug,
             metaTitle: editMetaTitle,
             metaDescription: editMetaDescription,
-            sources: editSources }),
+            sources: editSources,
+            category: editCategory }),
     });
     setGeneratedArticle({ ...generatedArticle, title: editTitle, content: editContent, summary: editSummary });
   };
@@ -324,6 +332,19 @@ export default function AdminDashboard() {
                       rows={10}
                       className="w-full border-2 border-gray-900 px-4 py-3 text-sm font-bold focus:outline-none focus:border-blue-600"
                     />
+                  </div>
+
+                  {/* Категория */}
+                  <div>
+                    <label className="text-xs font-black text-gray-400 tracking-widest uppercase block mb-1">Категория</label>
+                    <select
+                      value={editCategory}
+                      onChange={(e) => setEditCategory(e.target.value)}
+                      className="w-full border-2 border-gray-900 px-4 py-3 text-sm font-bold focus:outline-none focus:border-blue-600 bg-white"
+                    >
+                      <option value="">— без категория —</option>
+                      {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
                   </div>
 
                   {/* SEO секция */}
@@ -509,6 +530,14 @@ export default function AdminDashboard() {
                     onChange={(e) => setSurveyClosesAt(e.target.value)}
                     className="w-full border-2 border-gray-900 px-4 py-3 text-sm font-bold focus:outline-none focus:border-blue-600"
                   />
+                  <select
+                    value={surveyCategory}
+                    onChange={(e) => setSurveyCategory(e.target.value)}
+                    className="w-full border-2 border-gray-900 px-4 py-3 text-sm font-bold focus:outline-none focus:border-blue-600 bg-white"
+                  >
+                    <option value="">— без категория —</option>
+                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
                   <div className="flex gap-3">
                     <button
                       onClick={createSurvey}

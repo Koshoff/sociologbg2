@@ -14,6 +14,7 @@ public record ArticleResponse(
     String metaDescription,
     String sources,
     String status,
+    String category,
     UUID surveyId,
     String surveyTitle,
     LocalDateTime createdAt,
@@ -31,9 +32,10 @@ public record ArticleResponse(
                 article.getMetaDescription(),
                 article.getSources(),
                 article.getStatus(),
+                article.getCategory(),
                 article.getSurvey() != null ? article.getSurvey().getId() : null,
                 article.getSurvey() != null ? article.getSurvey().getTitle() : null,
-                article.getSurvey() != null ? article.getSurvey().getClosesAt() : null,  // ← ново
+                article.getSurvey() != null ? article.getSurvey().getClosesAt() : null,
                 article.getCreatedAt(),
                 article.getPublishedAt()
         );

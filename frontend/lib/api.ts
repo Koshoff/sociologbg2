@@ -7,6 +7,7 @@ export interface Survey {
   eventDate: string;
   closesAt: string;
   isActive: boolean;
+  category: string | null;
   createdAt: string;
 }
 

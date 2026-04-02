@@ -61,7 +61,8 @@ public class ArticleController {
                 body.get("slug"),
                 body.get("metaTitle"),
                 body.get("metaDescription"),
-                body.get("sources")
+                body.get("sources"),
+                body.get("category")
         );
         return ResponseEntity.ok(ArticleResponse.from(article));
     }
@@ -78,7 +79,8 @@ public class ArticleController {
                 body.get("slug"),
                 body.get("metaTitle"),
                 body.get("metaDescription"),
-                body.get("sources")
+                body.get("sources"),
+                body.get("category")
         );
         return ResponseEntity.ok(ArticleResponse.from(article));
     }
@@ -111,7 +113,8 @@ public class ArticleController {
                         parsed.get("slug"),
                         parsed.get("metaTitle"),
                         parsed.get("metaDescription"),
-                        parsed.get("sources")
+                        parsed.get("sources"),
+                        parsed.get("category")
                 );
 
                 Map<String, Object> result = new java.util.HashMap<>();

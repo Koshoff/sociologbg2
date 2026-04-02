@@ -36,6 +36,9 @@ public class Article {
     @Column(columnDefinition = "TEXT")
     private String sources;
 
+    @Column(length = 50)
+    private String category;
+
     @Column(nullable = false)
     private String status = "draft";
 

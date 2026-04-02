@@ -92,6 +92,7 @@ public class AdminController {
 
         // Задаваме salt-а ръчно след builder-а
         survey.setSalt(salt);
+        survey.setCategory(request.getCategory());
 
         Survey saved = surveyService.create(survey);
         return ResponseEntity.ok(SurveyResponse.from(saved));

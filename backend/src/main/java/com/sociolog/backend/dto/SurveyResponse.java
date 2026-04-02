@@ -19,6 +19,7 @@ public class SurveyResponse {
     private LocalDateTime eventDate;
     private LocalDateTime closesAt;
     private Boolean isActive;
+    private String category;
     private LocalDateTime createdAt;
 
     /**
@@ -33,6 +34,7 @@ public class SurveyResponse {
         response.setEventDate(survey.getEventDate());
         response.setClosesAt(survey.getClosesAt());
         response.setIsActive(survey.getIsActive());
+        response.setCategory(survey.getCategory());
         response.setCreatedAt(survey.getCreatedAt());
         return response;
     }

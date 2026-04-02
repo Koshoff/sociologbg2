@@ -17,20 +17,20 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b-2 border-gray-900">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
         
         {/* Лого */}
-        <div className="flex items-center">
-          <Image 
-            src="/sociolog-bg-logo-trimmed.png" 
-            alt="Социолог.bg" 
-            width={150} 
+        <Link href="/" className="flex items-center">
+          <Image
+            src="/sociolog-bg-logo-trimmed.png"
+            alt="Социолог.bg"
+            width={150}
             height={32}
             className="w-auto"
             priority
           />
-        </div>
+        </Link>
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1">
@@ -40,8 +40,8 @@ export default function Navbar() {
               href={item.href}
               className={`px-4 py-2 text-sm font-bold tracking-wider transition-all duration-150 ${
                 pathname === item.href
-                  ? 'text-gray-900 bg-gray-100'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  ? 'text-gray-900 border-b-2 border-amber-500'
+                  : 'text-gray-500 hover:text-gray-900 border-b-2 border-transparent hover:border-gray-200'
               }`}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translate(-2px, 2px)';
@@ -71,7 +71,7 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="md:hidden border-t-2 border-gray-900 bg-white">
+        <div className="md:hidden border-t border-gray-100 bg-white">
           {navLinks.map((item) => (
             <Link
               key={item.href}

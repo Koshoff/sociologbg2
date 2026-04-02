@@ -84,7 +84,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-3 gap-px bg-gray-700 mt-10 max-w-xl">
+          <div className="grid grid-cols-3 gap-px bg-gray-100 mt-10 max-w-xl">
             {[
               { label: 'АКТИВНИ', value: surveys.length.toString() },
               { label: 'ОБЩО ГЛАСОВЕ', value: totalVotes.toLocaleString('bg-BG') },
@@ -107,8 +107,8 @@ export default function HomePage() {
           <aside className="col-span-3 hidden lg:block sticky top-24 space-y-4">
 
             {/* Топ анкети */}
-            <div className="border-2 border-gray-900 p-5">
-              <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-4">
+            <div className="border border-gray-200 p-5">
+              <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b border-gray-200 pb-2 mb-4">
                 Топ проучвания
               </p>
               {topSurveys.length > 0 ? (
@@ -116,7 +116,7 @@ export default function HomePage() {
                   {topSurveys.map((s, i) => (
                     <Link key={s.id} href={`/surveys/${s.id}`}>
                       <div className="flex items-start gap-3 py-2 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors cursor-pointer">
-                        <span className="text-2xl font-black text-gray-200 leading-none w-6 flex-shrink-0">
+                        <span className="text-2xl font-black text-amber-200 leading-none w-6 flex-shrink-0">
                           {i + 1}
                         </span>
                         <div>
@@ -133,8 +133,8 @@ export default function HomePage() {
             </div>
 
             {/* Статистика */}
-            <div className="border-2 border-gray-900 p-5">
-              <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-4">
+            <div className="border border-gray-200 p-5">
+              <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b border-gray-200 pb-2 mb-4">
                 Статистика
               </p>
               <div className="space-y-3">
@@ -162,7 +162,7 @@ export default function HomePage() {
 
           {/* Централна колона */}
           <section className="col-span-12 lg:col-span-6">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b-2 border-gray-900">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
               <h2 className="text-sm font-black text-gray-900 tracking-widest uppercase">
                 Текущи проучвания
               </h2>
@@ -185,7 +185,7 @@ export default function HomePage() {
                   {paginated.map((survey, index) => (
                     <div
                       key={survey.id}
-                      className={`border-2 border-gray-900 p-6 shadow-md transition-all duration-150 ${
+                      className={`border border-gray-200 p-6 shadow-sm transition-all duration-150 ${
                         visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
                       }`}
                       style={{ transitionDelay: `${index * 100}ms` }}
@@ -214,8 +214,13 @@ export default function HomePage() {
                       </div>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-green-500"></div>
+                          <div className="w-2 h-2 bg-amber-500"></div>
                           <span className="text-xs font-bold text-gray-400 tracking-wider uppercase">Активно</span>
+                          {survey.category && (
+                            <span className="text-xs font-black text-amber-600 border border-amber-200 px-2 py-0.5 tracking-wider uppercase">
+                              {survey.category}
+                            </span>
+                          )}
                         </div>
                         <Link href={`/surveys/${survey.id}`}>
                           <button className="bg-blue-600 text-white px-6 py-2 text-xs font-black tracking-widest uppercase hover:bg-blue-700 transition-colors">
@@ -278,8 +283,8 @@ export default function HomePage() {
           <div className="col-span-12 lg:hidden space-y-4 mt-4">
 
             {/* Топ анкети */}
-            <div className="border-2 border-gray-900 p-5">
-              <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-4">
+            <div className="border border-gray-200 p-5">
+              <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b border-gray-200 pb-2 mb-4">
                 Топ проучвания
               </p>
               {topSurveys.length > 0 ? (
@@ -302,7 +307,7 @@ export default function HomePage() {
             </div>
 
             {/* Последни новини */}
-            <div className="border-2 border-gray-900 p-5">
+            <div className="border border-gray-200 p-5">
               <div className="flex justify-between items-center border-b-2 border-gray-900 pb-2 mb-4">
                 <p className="text-xs font-black text-gray-900 tracking-widest uppercase">Последни новини</p>
                 <Link href="/news" className="text-xs font-bold text-blue-600 uppercase tracking-wider">Всички →</Link>
@@ -326,8 +331,8 @@ export default function HomePage() {
             </div>
 
             {/* Статистика */}
-            <div className="border-2 border-gray-900 p-5">
-              <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-4">
+            <div className="border border-gray-200 p-5">
+              <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b border-gray-200 pb-2 mb-4">
                 Статистика
               </p>
               <div className="grid grid-cols-3 gap-4">
@@ -352,7 +357,7 @@ export default function HomePage() {
           <aside className="col-span-3 hidden lg:block sticky top-24 space-y-4">
 
             {/* Последни новини */}
-            <div className="border-2 border-gray-900 p-5">
+            <div className="border border-gray-200 p-5">
               <div className="flex justify-between items-center border-b-2 border-gray-900 pb-2 mb-4">
                 <p className="text-xs font-black text-gray-900 tracking-widest uppercase">
                   Последни новини
@@ -380,7 +385,7 @@ export default function HomePage() {
             </div>
 
             {/* Архив */}
-            <div className="border-2 border-gray-900 p-5">
+            <div className="border border-gray-200 p-5">
               <div className="flex justify-between items-center border-b-2 border-gray-900 pb-2 mb-4">
                 <p className="text-xs font-black text-gray-900 tracking-widest uppercase">
                   Архив

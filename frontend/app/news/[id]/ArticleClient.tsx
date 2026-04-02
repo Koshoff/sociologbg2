@@ -60,8 +60,8 @@ export default function ArticleClient({ article }: { article: Article }) {
                 <span className="text-blue-400 text-xs font-bold tracking-widest uppercase">НОВИНИ</span>
               </div>
               {article.surveyId && article.surveyClosesAt && new Date(article.surveyClosesAt) > new Date() && (
-                <div className="inline-block border border-green-500 px-3 py-1">
-                  <span className="text-green-400 text-xs font-bold tracking-widest uppercase">● Активна анкета</span>
+                <div className="inline-block border border-amber-400 px-3 py-1">
+                  <span className="text-amber-400 text-xs font-bold tracking-widest uppercase">● Активна анкета</span>
                 </div>
               )}
             </div>
@@ -95,16 +95,32 @@ export default function ArticleClient({ article }: { article: Article }) {
 
             {/* Източници */}
             {article.sources && (
-              <div className={`border-t-2 border-gray-900 pt-6 mt-8 transition-all duration-700 delay-300 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+              <div className={`border-t border-gray-200 pt-6 mt-8 transition-all duration-700 delay-300 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                 <p className="text-xs font-black text-gray-900 tracking-widest uppercase mb-4">
                   Източници
                 </p>
                 <div className="space-y-2">
-                  {article.sources && article.sources.split('\n').filter(s => s.trim()).map((source, i) => (
-                    <p key={i} className="text-xs font-bold text-gray-400 leading-relaxed">
-                      {i + 1}. {source}
-                    </p>
-                  ))}
+                  {article.sources && article.sources.split('\n').filter(s => s.trim()).map((source, i) => {
+                    const trimmed = source.trim();
+                    const isUrl = /^https?:\/\//i.test(trimmed);
+                    return (
+                      <p key={i} className="text-xs font-bold text-gray-400 leading-relaxed">
+                        {i + 1}.{' '}
+                        {isUrl ? (
+                          <a
+                            href={trimmed}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-500 hover:text-blue-700 underline underline-offset-2 transition-colors"
+                          >
+                            {trimmed}
+                          </a>
+                        ) : (
+                          trimmed
+                        )}
+                      </p>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -115,8 +131,8 @@ export default function ArticleClient({ article }: { article: Article }) {
 
             {/* Анкета */}
             {article.surveyId && article.surveyClosesAt && new Date(article.surveyClosesAt) > new Date() && (
-              <div className={`border-2 border-blue-600 p-6 transition-all duration-700 delay-300 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                <p className="text-xs font-black text-blue-600 tracking-widest uppercase mb-3 border-b-2 border-blue-600 pb-2">
+              <div className={`border border-blue-200 bg-blue-50 p-6 transition-all duration-700 delay-300 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+                <p className="text-xs font-black text-blue-600 tracking-widest uppercase mb-3 border-b border-blue-200 pb-2">
                   ● Свързана анкета
                 </p>
                 <p className="font-black text-gray-900 text-lg leading-tight mb-4">
@@ -131,8 +147,8 @@ export default function ArticleClient({ article }: { article: Article }) {
             )}
 
             {/* За платформата */}
-            <div className="border-2 border-gray-900 p-6">
-              <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-3">
+            <div className="border border-gray-200 p-6">
+              <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b border-gray-200 pb-2 mb-3">
                 За платформата
               </p>
               <p className="text-xs text-gray-500 font-bold leading-relaxed mb-4">
@@ -149,7 +165,7 @@ export default function ArticleClient({ article }: { article: Article }) {
             </div>
 
             {/* Реклама */}
-            <div className="border-2 border-dashed border-gray-200 p-6">
+            <div className="border border-dashed border-gray-200 p-6">
               <p className="text-xs font-bold text-gray-300 tracking-widest uppercase text-center mb-3">Реклама</p>
               <div className="h-48 bg-gray-50 border border-gray-100" />
             </div>

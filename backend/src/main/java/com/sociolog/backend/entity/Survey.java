@@ -33,6 +33,9 @@ public class Survey {
 
     private LocalDateTime closesAt;
 
+    @Column(length = 50)
+    private String category;
+
     @Column(nullable = false)
     private Boolean isActive = true;
 

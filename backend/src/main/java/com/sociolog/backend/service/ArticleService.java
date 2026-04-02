@@ -40,7 +40,7 @@ public class ArticleService {
                 .orElseThrow(() -> new RuntimeException("Article not found"));
     }
 
-    public Article create(String title, String content, String summary, String slug, String metaTitle, String metaDescription, String sources) {
+    public Article create(String title, String content, String summary, String slug, String metaTitle, String metaDescription, String sources, String category) {
         Article article = new Article();
         article.setTitle(title);
         article.setContent(content);
@@ -49,6 +49,7 @@ public class ArticleService {
         article.setMetaTitle(metaTitle);
         article.setMetaDescription(metaDescription);
         article.setSources(sources);
+        article.setCategory(category);
         article.setStatus("draft");
         return articleRepository.save(article);
     }
@@ -63,6 +64,7 @@ public class ArticleService {
         survey.setClosesAt(closesAt);
         survey.setIsActive(true);
         survey.setSalt(generateSalt());
+        survey.setCategory(article.getCategory());
         Survey savedSurvey = surveyRepository.save(survey);
 
         article.setSurvey(savedSurvey);
@@ -71,7 +73,7 @@ public class ArticleService {
         return articleRepository.save(article);
     }
 
-    public Article update(UUID id, String title, String content, String summary, String slug, String metaTitle, String metaDescription, String sources) {
+    public Article update(UUID id, String title, String content, String summary, String slug, String metaTitle, String metaDescription, String sources, String category) {
         Article article = getById(id);
         article.setTitle(title);
         article.setContent(content);
@@ -80,6 +82,7 @@ public class ArticleService {
         article.setMetaTitle(metaTitle);
         article.setMetaDescription(metaDescription);
         article.setSources(sources);
+        article.setCategory(category);
         return articleRepository.save(article);
     }
 }

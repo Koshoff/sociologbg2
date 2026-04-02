@@ -45,7 +45,7 @@ export default function Footer() {
 
           {/* Навигация */}
           <div className="col-span-6 lg:col-span-2">
-            <p className="text-xs font-black text-white tracking-widest uppercase border-b-2 border-gray-700 pb-2 mb-4">
+            <p className="text-xs font-black text-white tracking-widest uppercase border-b border-gray-700 pb-2 mb-4">
               Платформа
             </p>
             <div className="space-y-2">
@@ -63,7 +63,7 @@ export default function Footer() {
 
           {/* За нас */}
           <div className="col-span-6 lg:col-span-2">
-            <p className="text-xs font-black text-white tracking-widest uppercase border-b-2 border-gray-700 pb-2 mb-4">
+            <p className="text-xs font-black text-white tracking-widest uppercase border-b border-gray-700 pb-2 mb-4">
               За нас
             </p>
             <div className="space-y-2">
@@ -81,12 +81,12 @@ export default function Footer() {
 
           {/* Контакт форма */}
           <div className="col-span-12 lg:col-span-4">
-            <p className="text-xs font-black text-white tracking-widest uppercase border-b-2 border-gray-700 pb-2 mb-4">
+            <p className="text-xs font-black text-white tracking-widest uppercase border-b border-gray-700 pb-2 mb-4">
               Свържи се с нас
             </p>
             {contactSent ? (
-              <div className="border-2 border-green-500 p-4">
-                <p className="text-xs font-black text-green-400 uppercase tracking-wider">
+              <div className="border border-emerald-500 p-4">
+                <p className="text-xs font-black text-emerald-400 uppercase tracking-wider">
                   ✓ Съобщението е изпратено!
                 </p>
               </div>
@@ -98,7 +98,7 @@ export default function Footer() {
                   onChange={e => setContactName(e.target.value)}
                   placeholder="Вашето име"
                   required
-                  className="w-full border-2 border-gray-700 bg-slate-800 text-white px-3 py-2 text-xs font-bold focus:outline-none focus:border-blue-500 placeholder-gray-500"
+                  className="w-full border border-gray-700 bg-slate-800 text-white px-3 py-2 text-xs font-bold focus:outline-none focus:border-blue-500 placeholder-gray-500"
                 />
                 <input
                   type="email"
@@ -106,7 +106,7 @@ export default function Footer() {
                   onChange={e => setContactEmail(e.target.value)}
                   placeholder="Имейл адрес"
                   required
-                  className="w-full border-2 border-gray-700 bg-slate-800 text-white px-3 py-2 text-xs font-bold focus:outline-none focus:border-blue-500 placeholder-gray-500"
+                  className="w-full border border-gray-700 bg-slate-800 text-white px-3 py-2 text-xs font-bold focus:outline-none focus:border-blue-500 placeholder-gray-500"
                 />
                 <textarea
                   value={contactMessage}
@@ -114,7 +114,7 @@ export default function Footer() {
                   placeholder="Вашето съобщение"
                   required
                   rows={3}
-                  className="w-full border-2 border-gray-700 bg-slate-800 text-white px-3 py-2 text-xs font-bold focus:outline-none focus:border-blue-500 placeholder-gray-500"
+                  className="w-full border border-gray-700 bg-slate-800 text-white px-3 py-2 text-xs font-bold focus:outline-none focus:border-blue-500 placeholder-gray-500"
                 />
                 <button
                   type="submit"
@@ -128,7 +128,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="border-t-2 border-gray-700 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="border-t border-gray-700 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
             Анонимност и достоверност
           </span>

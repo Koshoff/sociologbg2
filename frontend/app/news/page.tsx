@@ -104,8 +104,8 @@ export default function NewsPage() {
             <aside className="col-span-3 hidden lg:block sticky top-24 space-y-4">
 
               {/* Анкети свързани с новини */}
-              <div className="border-2 border-gray-900 p-5">
-                <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-4">
+              <div className="border border-gray-200 p-5">
+                <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b border-gray-200 pb-2 mb-4">
                   Гласувай сега
                 </p>
                 {articlesWithSurveys.length > 0 ? (
@@ -134,8 +134,8 @@ export default function NewsPage() {
               </div>
 
               {/* За платформата */}
-              <div className="border-2 border-gray-900 p-5">
-                <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-3">
+              <div className="border border-gray-200 p-5">
+                <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b border-gray-200 pb-2 mb-3">
                   За платформата
                 </p>
                 <p className="text-xs text-gray-500 font-bold leading-relaxed mb-3">
@@ -161,7 +161,7 @@ export default function NewsPage() {
               {/* Featured */}
               <Link href={`/news/${featured.id}`}>
                 <div
-                  className="border-2 border-gray-900 p-8 cursor-pointer transition-all duration-150"
+                  className="border border-gray-200 p-8 cursor-pointer transition-all duration-150"
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'translate(-3px, 3px)';
                     e.currentTarget.style.boxShadow = '6px -6px 0px rgba(0,0,0,0.15)';
@@ -172,12 +172,12 @@ export default function NewsPage() {
                   }}
                 >
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="bg-blue-600 px-3 py-1">
+                    <div className="bg-amber-500 px-3 py-1">
                       <span className="text-white text-xs font-black tracking-widest uppercase">FEATURED</span>
                     </div>
                     {featured.surveyId && featured.surveyClosesAt && new Date(featured.surveyClosesAt) > new Date() && (
-                      <div className="border border-green-500 px-3 py-1">
-                        <span className="text-green-600 text-xs font-black tracking-widest uppercase">● Активна анкета</span>
+                      <div className="border border-amber-400 px-3 py-1">
+                        <span className="text-amber-600 text-xs font-black tracking-widest uppercase">● Активна анкета</span>
                       </div>
                     )}
                   </div>
@@ -185,7 +185,7 @@ export default function NewsPage() {
                     {featured.title}
                   </h2>
                   <p className="text-gray-500 text-lg mb-6 leading-relaxed">{featured.summary}</p>
-                  <div className="flex items-center justify-between border-t-2 border-gray-100 pt-4">
+                  <div className="flex items-center justify-between border-t border-gray-200 pt-4">
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
                       {new Date(featured.publishedAt || featured.createdAt).toLocaleDateString('bg-BG', {
                         day: 'numeric', month: 'long', year: 'numeric'
@@ -200,7 +200,7 @@ export default function NewsPage() {
               {rest.map((article, index) => (
                 <Link key={article.id} href={`/news/${article.id}`}>
                   <div
-                    className={`border-2 border-gray-900 p-5 cursor-pointer transition-all duration-150 mt-4 ${
+                    className={`border border-gray-200 p-5 cursor-pointer transition-all duration-150 mt-4 ${
                       visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
                     }`}
                     style={{ transitionDelay: `${index * 100}ms` }}
@@ -214,7 +214,7 @@ export default function NewsPage() {
                     }}
                   >
                     {article.surveyId && article.surveyClosesAt && new Date(article.surveyClosesAt) > new Date() && (
-                    <span className="text-xs font-black text-green-600 tracking-widest uppercase mb-2 block">
+                    <span className="text-xs font-black text-amber-600 tracking-widest uppercase mb-2 block">
                       ● Активна анкета
                     </span>
                     )}
@@ -233,8 +233,8 @@ export default function NewsPage() {
             <div className="col-span-12 lg:hidden space-y-4 mt-4">
 
               {/* Гласувай сега */}
-              <div className="border-2 border-gray-900 p-5">
-                <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-4">
+              <div className="border border-gray-200 p-5">
+                <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b border-gray-200 pb-2 mb-4">
                   Гласувай сега
                 </p>
                 {articlesWithSurveys.length > 0 ? (
@@ -263,8 +263,8 @@ export default function NewsPage() {
               </div>
 
               {/* Последни резултати */}
-              <div className="border-2 border-gray-900 p-5">
-                <div className="flex justify-between items-center border-b-2 border-gray-900 pb-2 mb-4">
+              <div className="border border-gray-200 p-5">
+                <div className="flex justify-between items-center border-b border-gray-200 pb-2 mb-4">
                   <p className="text-xs font-black text-gray-900 tracking-widest uppercase">
                     Последни резултати
                   </p>
@@ -296,8 +296,8 @@ export default function NewsPage() {
               </div>
 
               {/* Статистика */}
-              <div className="border-2 border-gray-900 p-5">
-                <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-4">
+              <div className="border border-gray-200 p-5">
+                <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b border-gray-200 pb-2 mb-4">
                   Статистика
                 </p>
                 <div className="grid grid-cols-2 gap-4">
@@ -313,8 +313,8 @@ export default function NewsPage() {
               </div>
 
               {/* За платформата */}
-              <div className="border-2 border-gray-900 p-5">
-                <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-3">
+              <div className="border border-gray-200 p-5">
+                <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b border-gray-200 pb-2 mb-3">
                   За платформата
                 </p>
                 <p className="text-xs text-gray-500 font-bold leading-relaxed mb-3">
@@ -333,8 +333,8 @@ export default function NewsPage() {
             <aside className="col-span-3 hidden lg:block sticky top-24 space-y-4">
 
               {/* Последни резултати от архива */}
-              <div className="border-2 border-gray-900 p-5">
-                <div className="flex justify-between items-center border-b-2 border-gray-900 pb-2 mb-4">
+              <div className="border border-gray-200 p-5">
+                <div className="flex justify-between items-center border-b border-gray-200 pb-2 mb-4">
                   <p className="text-xs font-black text-gray-900 tracking-widest uppercase">
                     Последни резултати
                   </p>
@@ -366,8 +366,8 @@ export default function NewsPage() {
               </div>
 
               {/* Статистика */}
-              <div className="border-2 border-gray-900 p-5">
-                <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-4">
+              <div className="border border-gray-200 p-5">
+                <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b border-gray-200 pb-2 mb-4">
                   Статистика
                 </p>
                 <div className="space-y-3">

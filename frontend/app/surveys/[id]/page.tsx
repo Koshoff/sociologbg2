@@ -226,11 +226,11 @@ const submitComment = async (parentId?: string) => {
           style={{ backgroundColor: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(4px)' }}
           onClick={(e) => { if (e.target === e.currentTarget) setShowGooglePopup(false); }}
         >
-          <div className="bg-white border-2 border-gray-900 max-w-sm w-full"
+          <div className="bg-white border border-gray-200 max-w-sm w-full"
             style={{ boxShadow: '8px -8px 0px rgba(0,0,0,0.15)' }}
           >
             {/* Header */}
-            <div className="flex justify-between items-center px-6 py-4 border-b-2 border-gray-900 bg-slate-900">
+            <div className="flex justify-between items-center px-6 py-4 border-b border-slate-700 bg-slate-900">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
                 <p className="text-xs font-black text-white tracking-widest uppercase">
@@ -247,7 +247,7 @@ const submitComment = async (parentId?: string) => {
 
             <div className="p-6">
               {/* Избран отговор */}
-              <div className="border-2 border-blue-600 p-4 mb-5 flex items-center justify-between">
+              <div className="border border-blue-200 bg-blue-50 p-4 mb-5 flex items-center justify-between">
                 <p className="text-xs font-black text-blue-600 uppercase tracking-widest">
                   Твоят избор
                 </p>
@@ -266,8 +266,8 @@ const submitComment = async (parentId?: string) => {
               <div id="google-signin-button" className="flex justify-center mb-5" />
 
               {/* Footer */}
-              <div className="border-t-2 border-gray-100 pt-4 flex items-center gap-2">
-                <div className="w-4 h-4 bg-green-500 flex items-center justify-center flex-shrink-0">
+              <div className="border-t border-gray-100 pt-4 flex items-center gap-2">
+                <div className="w-4 h-4 bg-emerald-500 flex items-center justify-center flex-shrink-0">
                   <span className="text-white text-xs font-black">✓</span>
                 </div>
                 <p className="text-xs text-gray-400 font-bold leading-relaxed">
@@ -283,10 +283,17 @@ const submitComment = async (parentId?: string) => {
       <section className="bg-slate-900 pt-32 pb-16 px-6">
         <div className="max-w-3xl mx-auto">
           <div className={`transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-            <div className="inline-block border border-blue-500 px-3 py-1 mb-4">
-              <span className="text-blue-400 text-xs font-bold tracking-widest uppercase">
-                ● Активно проучване
-              </span>
+            <div className="flex items-center gap-3 mb-4 flex-wrap">
+              <div className="inline-block border border-blue-500 px-3 py-1">
+                <span className="text-blue-400 text-xs font-bold tracking-widest uppercase">
+                  ● Активно проучване
+                </span>
+              </div>
+              {survey?.category && (
+                <div className="inline-block border border-amber-400 px-3 py-1">
+                  <span className="text-amber-400 text-xs font-bold tracking-widest uppercase">{survey.category}</span>
+                </div>
+              )}
             </div>
             <h1 className="text-4xl md:text-5xl font-black text-white leading-none mb-4 tracking-tight">
               {survey?.title}
@@ -313,7 +320,7 @@ const submitComment = async (parentId?: string) => {
 
           {/* Гласуване */}
           <div className={`transition-all duration-700 delay-200 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-            <p className="text-xs font-black text-gray-400 tracking-widest uppercase mb-4 border-b-2 border-gray-900 pb-2">
+            <p className="text-xs font-black text-gray-400 tracking-widest uppercase mb-4 border-b border-gray-200 pb-2">
               Вашият глас
             </p>
 
@@ -324,10 +331,10 @@ const submitComment = async (parentId?: string) => {
                     <button
                       key={choice}
                       onClick={() => setSelectedChoice(choice)}
-                      className={`w-full py-4 px-6 border-2 font-black text-sm tracking-wider uppercase text-left transition-all duration-150 ${
+                      className={`w-full py-4 px-6 border font-black text-sm tracking-wider uppercase text-left transition-all duration-150 ${
                         selectedChoice === choice
                           ? 'border-blue-600 bg-blue-600 text-white'
-                          : 'border-gray-900 text-gray-900 hover:bg-gray-50'
+                          : 'border-gray-200 text-gray-900 hover:bg-gray-50 hover:border-gray-400'
                       }`}
                       onMouseEnter={(e) => {
                         if (selectedChoice !== choice) {
@@ -366,14 +373,14 @@ const submitComment = async (parentId?: string) => {
               </div>
             ) : (
               <div>
-    <div className="border-2 border-green-500 p-4 mb-4">
+    <div className="border border-emerald-200 bg-emerald-50 p-4 mb-4">
       <div className="flex items-center gap-3 mb-2">
-        <div className="w-6 h-6 bg-green-500 flex items-center justify-center">
+        <div className="w-6 h-6 bg-emerald-500 flex items-center justify-center">
           <span className="text-white text-xs font-black">✓</span>
         </div>
-        <p className="font-black text-gray-900 uppercase tracking-wider">Гласът е записан!</p>
+        <p className="font-black text-emerald-700 uppercase tracking-wider">Гласът е записан!</p>
       </div>
-      <p className="text-sm text-gray-500 font-bold">Благодарим за участието.</p>
+      <p className="text-sm text-emerald-600 font-bold">Благодарим за участието.</p>
     </div>
 
     
@@ -383,7 +390,7 @@ const submitComment = async (parentId?: string) => {
 
           {/* Резултати */}
           <div className={`transition-all duration-700 delay-300 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-            <p className="text-xs font-black text-gray-400 tracking-widest uppercase mb-4 border-b-2 border-gray-900 pb-2">
+            <p className="text-xs font-black text-gray-400 tracking-widest uppercase mb-4 border-b border-gray-200 pb-2">
               Резултати · {totalVotes} гласа
             </p>
 
@@ -522,7 +529,7 @@ const submitComment = async (parentId?: string) => {
 
           {/* Reply-та */}
           {comment.replies?.length > 0 && (
-            <div className="mt-3 ml-6 space-y-3 border-l-2 border-gray-100 pl-4">
+            <div className="mt-3 ml-6 space-y-3 border-l border-gray-200 pl-4">
               {comment.replies.map((reply: any) => (
                 <div key={reply.id} className="py-2">
                   <div className="flex items-center gap-2 mb-1">

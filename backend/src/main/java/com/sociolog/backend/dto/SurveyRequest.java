@@ -21,4 +21,6 @@ public class SurveyRequest {
 
     @NotNull(message = "Closing date is required")
     private LocalDateTime closesAt;
+
+    private String category;
 }

@@ -15,6 +15,7 @@ interface Article {
   status: string;
   surveyId: string | null;
   surveyTitle: string | null;
+  surveyClosesAt: string | null;
   createdAt: string;
   publishedAt: string | null;
 }

@@ -13,6 +13,7 @@ interface Survey {
   description: string;
   closesAt: string;
   createdAt: string;
+  category: string | null;
 }
 
 interface ArchivedSurvey {
@@ -23,10 +24,15 @@ interface ArchivedSurvey {
   };
 }
 
+const ITEMS_PER_PAGE = 4;
+const CATEGORIES = ['Политика', 'Икономика', 'Социални', 'Здравеопазване'];
+
 export default function ArchivePage() {
   const [archived, setArchived] = useState<ArchivedSurvey[]>([]);
   const [loading, setLoading] = useState(true);
   const [visible, setVisible] = useState(false);
+  const [page, setPage] = useState(0);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   useEffect(() => {
     fetch(`${API_URL}/api/surveys/archived`)
@@ -36,6 +42,12 @@ export default function ArchivePage() {
       .finally(() => setLoading(false));
     setTimeout(() => setVisible(true), 100);
   }, []);
+
+  const filtered = activeCategory
+    ? archived.filter(a => a.survey.category === activeCategory)
+    : archived;
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginated = filtered.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE);
 
   return (
     <div className="min-h-screen bg-white font-sans">
@@ -66,8 +78,8 @@ export default function ArchivePage() {
 
           {/* Лява колона */}
           <aside className="col-span-3 hidden lg:block space-y-4">
-            <div className="border border-gray-900 p-5">
-              <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-4">
+            <div className="border border-gray-200 p-5">
+              <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b border-gray-200 pb-2 mb-4">
                 Статистика
               </p>
               <div className="space-y-3">
@@ -84,32 +96,47 @@ export default function ArchivePage() {
               </div>
             </div>
 
-            <div className="border border-dashed border-gray-200 p-5">
+            <div className="border border-dashed border-gray-100 p-5">
               <p className="text-xs font-bold text-gray-300 tracking-widest uppercase text-center mb-4">
                 Реклама
               </p>
               <div className="h-48 bg-gray-50 border border-gray-100" />
             </div>
 
-            <div className="border border-gray-900 p-5">
-              <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-4">
+            <div className="border border-gray-200 p-5">
+              <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b border-gray-200 pb-2 mb-4">
                 Категории
               </p>
-              {['Политика', 'Икономика', 'Социални', 'Здравеопазване'].map((cat) => (
-                <div
-                  key={cat}
-                  className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0"
-                >
-                  <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">{cat}</span>
-                  <span className="text-xs font-black text-gray-400">—</span>
-                </div>
-              ))}
+              <button
+                onClick={() => { setActiveCategory(null); setPage(0); }}
+                className={`w-full text-left flex justify-between items-center py-2 border-b border-gray-100 text-xs font-bold uppercase tracking-wider transition-colors ${
+                  activeCategory === null ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <span>Всички</span>
+                <span className="font-black text-gray-400">{archived.length}</span>
+              </button>
+              {CATEGORIES.map((cat) => {
+                const count = archived.filter(a => a.survey.category === cat).length;
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => { setActiveCategory(cat); setPage(0); }}
+                    className={`w-full text-left flex justify-between items-center py-2 border-b border-gray-100 last:border-0 text-xs font-bold uppercase tracking-wider transition-colors ${
+                      activeCategory === cat ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    <span>{cat}</span>
+                    <span className="font-black text-gray-400">{count}</span>
+                  </button>
+                );
+              })}
             </div>
           </aside>
 
           {/* Централна колона */}
           <section className="col-span-12 lg:col-span-6">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b-2 border-gray-900">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
               <h2 className="text-sm font-black text-gray-900 tracking-widest uppercase">
                 Приключили проучвания
               </h2>
@@ -132,14 +159,14 @@ export default function ArchivePage() {
             )}
 
             <div className="space-y-4">
-              {archived.map(({ survey, totalVotes, results }, index) => {
+              {paginated.map(({ survey, totalVotes, results }, index) => {
                 const total = results.total || {};
                 const winner = Object.entries(total).sort(([, a], [, b]) => b - a)[0];
 
                 return (
                   <div
                     key={survey.id}
-                    className={`border border-gray-900 p-6 shadow-md transition-all duration-150 ${
+                    className={`border border-gray-200 p-6 shadow-sm transition-all duration-150 ${
                       visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
                     }`}
                     style={{ transitionDelay: `${index * 100}ms` }}
@@ -158,6 +185,11 @@ export default function ArchivePage() {
                         <div className="flex items-center gap-2 mb-2">
                           <div className="w-2 h-2 bg-gray-400"></div>
                           <span className="text-xs font-black text-gray-400 tracking-widest uppercase">Приключило</span>
+                          {survey.category && (
+                            <span className="text-xs font-black text-amber-600 tracking-widest uppercase border border-amber-200 px-2 py-0.5">
+                              {survey.category}
+                            </span>
+                          )}
                         </div>
                         <h2 className="font-black text-gray-900 text-lg leading-tight">{survey.title}</h2>
                         {survey.description && (
@@ -209,8 +241,8 @@ export default function ArchivePage() {
                     )}
 
                     {/* Верификация и дата */}
-                    <div className="border-t-2 border-gray-100 pt-3 flex justify-between items-center">
-                      <div className="border-l-2 border-green-500 pl-2">
+                    <div className="border-t border-gray-200 pt-3 flex justify-between items-center">
+                      <div className="border-l-2 border-emerald-500 pl-2">
                         <p className="text-sm font-black text-gray-900">{totalVotes}</p>
                         <p className="text-xs font-bold text-gray-400">ВЕР</p>
                       </div>
@@ -222,12 +254,45 @@ export default function ArchivePage() {
                 );
               })}
             </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
+                <button
+                  onClick={() => setPage(p => Math.max(0, p - 1))}
+                  disabled={page === 0}
+                  className="border border-gray-200 px-4 py-2 text-xs font-black tracking-widest uppercase hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  ← ПРЕДИШНА
+                </button>
+                <div className="flex gap-1">
+                  {Array.from({ length: totalPages }).map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setPage(i)}
+                      className={`w-8 h-8 text-xs font-black transition-colors ${
+                        page === i ? 'bg-slate-900 text-white' : 'border border-gray-200 hover:bg-gray-50'
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                  disabled={page === totalPages - 1}
+                  className="border border-gray-200 px-4 py-2 text-xs font-black tracking-widest uppercase hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  СЛЕДВАЩА →
+                </button>
+              </div>
+            )}
           </section>
 
           {/* Дясна колона */}
           <aside className="col-span-3 hidden lg:block space-y-4">
-            <div className="border border-gray-900 p-5">
-              <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-4">
+            <div className="border border-gray-200 p-5">
+              <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b border-gray-200 pb-2 mb-4">
                 Последни резултати
               </p>
               {archived.slice(0, 3).map(({ survey, totalVotes, results }) => {
@@ -246,14 +311,14 @@ export default function ArchivePage() {
               })}
             </div>
 
-            <div className="border border-dashed border-gray-200 p-5">
+            <div className="border border-dashed border-gray-100 p-5">
               <p className="text-xs font-bold text-gray-300 tracking-widest uppercase text-center mb-4">
                 Реклама
               </p>
               <div className="h-48 bg-gray-50 border border-gray-100" />
             </div>
 
-            <div className="border border-gray-900 p-5">
+            <div className="border border-gray-200 p-5">
               <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-3">
                 За платформата
               </p>

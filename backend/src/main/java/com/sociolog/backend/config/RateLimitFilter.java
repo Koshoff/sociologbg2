@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -18,50 +19,41 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Rate Limiting филтър — ограничава броя заявки по IP адрес.
- *
- * OncePerRequestFilter гарантира че филтърът се изпълнява
- * точно веднъж за всяка HTTP заявка.
- *
- * @Component казва на Spring да го регистрира автоматично.
- */
 @Component
 public class RateLimitFilter extends OncePerRequestFilter {
 
-    /**
-     * ConcurrentHashMap пази bucket за всеки IP адрес.
-     * Concurrent = thread-safe, много заявки едновременно
-     * са безопасни.
-     *
-     * Представи си го като: Map<"192.168.1.1", Bucket>
-     */
-    private final ConcurrentHashMap<String, Bucket> buckets = new ConcurrentHashMap<>();
+    // Votes: 10 requests per minute per IP
+    private final ConcurrentHashMap<String, Bucket> voteBuckets = new ConcurrentHashMap<>();
+
+    // Admin login: 5 attempts per 5 minutes per IP — brute-force protection
+    private final ConcurrentHashMap<String, Bucket> loginBuckets = new ConcurrentHashMap<>();
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    /**
-     * Създава нов bucket за даден IP.
-     *
-     * Bucket = кофа с жетони.
-     * - Започва с 10 жетона
-     * - Всяка заявка изразходва 1 жетон
-     * - Зарежда се с 10 жетона на всеки 1 минута
-     *
-     * Така потребителят може да направи 10 заявки/минута.
-     * За гласуване това е повече от достатъчно.
-     */
-    private Bucket createNewBucket() {
+    // Clears all buckets every 5 minutes to prevent unbounded memory growth.
+    // Worst case: an attacker gets a fresh window after the cleanup cycle,
+    // but vote integrity is also enforced by the DB hash deduplication.
+    @Scheduled(fixedRate = 300_000)
+    public void cleanupBuckets() {
+        voteBuckets.clear();
+        loginBuckets.clear();
+    }
+
+    private Bucket createVoteBucket() {
         Bandwidth limit = Bandwidth.classic(
-                10,                          // максимум 10 жетона
-                Refill.intervally(
-                        10,                      // зарежда 10 жетона
-                        Duration.ofMinutes(1)    // на всяка минута
-                )
+                10,
+                Refill.intervally(10, Duration.ofMinutes(1))
         );
-        return Bucket.builder()
-                .addLimit(limit)
-                .build();
+        return Bucket.builder().addLimit(limit).build();
+    }
+
+    private Bucket createLoginBucket() {
+        // 5 attempts per 5 minutes — tight enough to stop brute force
+        Bandwidth limit = Bandwidth.classic(
+                5,
+                Refill.intervally(5, Duration.ofMinutes(5))
+        );
+        return Bucket.builder().addLimit(limit).build();
     }
 
     @Override
@@ -70,56 +62,32 @@ public class RateLimitFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
 
-        // Прилагаме rate limiting само на POST /api/votes/**
-        // GET заявките са безопасни — само четат данни
         String path = request.getRequestURI();
         String method = request.getMethod();
 
+        // Nginx sets X-Forwarded-For to $remote_addr (the real client IP,
+        // not user-supplied), and Spring's ForwardedHeaderFilter resolves
+        // request.getRemoteAddr() to that value via forward-headers-strategy: framework.
+        String ip = request.getRemoteAddr();
+
+        Bucket bucket = null;
+
         if ("POST".equals(method) && path.startsWith("/api/votes")) {
-
-            // Вземаме IP адреса на потребителя
-            String ip = getClientIp(request);
-
-            // Вземаме или създаваме bucket за този IP
-            // computeIfAbsent = ако няма bucket за този IP, създай нов
-            Bucket bucket = buckets.computeIfAbsent(ip, k -> createNewBucket());
-
-            // Опитваме да вземем 1 жетон
-            if (bucket.tryConsume(1)) {
-                // Жетонът е наличен → продължаваме нормално
-                filterChain.doFilter(request, response);
-            } else {
-                // Няма жетони → блокираме заявката
-                response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
-                response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                objectMapper.writeValue(
-                        response.getWriter(),
-                        Map.of(
-                                "success", false,
-                                "message", "Твърде много заявки. Опитайте след малко."
-                        )
-                );
-            }
-        } else {
-            // Не е POST /api/votes → пропускаме филтъра
-            filterChain.doFilter(request, response);
+            bucket = voteBuckets.computeIfAbsent(ip, k -> createVoteBucket());
+        } else if ("POST".equals(method) && path.equals("/api/admin/login")) {
+            bucket = loginBuckets.computeIfAbsent(ip, k -> createLoginBucket());
         }
-    }
 
-    /**
-     * Извлича реалния IP адрес на потребителя.
-     *
-     * Когато има reverse proxy (nginx, CloudFlare) пред backend-а,
-     * реалният IP се пази в X-Forwarded-For header.
-     * Ако го няма — използваме директния IP от заявката.
-     */
-    private String getClientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (forwarded != null && !forwarded.isEmpty()) {
-            // X-Forwarded-For може да съдържа няколко IP-та: "client, proxy1, proxy2"
-            // Вземаме само първото — то е реалният клиент
-            return forwarded.split(",")[0].trim();
+        if (bucket != null && !bucket.tryConsume(1)) {
+            response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            objectMapper.writeValue(
+                    response.getWriter(),
+                    Map.of("success", false, "message", "Твърде много заявки. Опитайте след малко.")
+            );
+            return;
         }
-        return request.getRemoteAddr();
+
+        filterChain.doFilter(request, response);
     }
 }
