@@ -49,9 +49,17 @@ export default function SurveyPage() {
     finally { setLoadingComments(false); }
 };
 
+const saveGoogleToken = (token: string) => {
+    setGoogleToken(token);
+    localStorage.setItem('google_token', token);
+};
+
   useEffect(() => {
     const voted = localStorage.getItem(`voted_${id}`);
     if (voted) setHasVoted(true);
+
+    const token = localStorage.getItem('google_token'); // ← добави това
+    if (token) setGoogleToken(token);                   // ← и това
 
     getSurvey(id)
       .then(setSurvey)
@@ -61,7 +69,7 @@ export default function SurveyPage() {
     getResults(id).then(setResults).catch(() => {});
     setTimeout(() => setVisible(true), 100);
     loadComments();
-  }, [id]);
+    }, [id]);
 
   useEffect(() => {
     if (!showGooglePopup) return;
@@ -99,7 +107,7 @@ export default function SurveyPage() {
             window.google.accounts.id.initialize({
                 client_id: GOOGLE_CLIENT_ID,
                 callback: (response: any) => {
-                    setGoogleToken(response.credential);
+                    saveGoogleToken(response.credential);
                     setShowCommentLogin(false);
                 },
                 auto_select: false,
@@ -125,7 +133,7 @@ export default function SurveyPage() {
     setVoting(true);
     setError(null);
     setShowGooglePopup(false);
-    setGoogleToken(response.credential);
+    saveGoogleToken(response.credential);
 
     try {
       const res = await fetch(`${API_URL}/api/votes/${id}`, {
@@ -159,29 +167,37 @@ export default function SurveyPage() {
 
   
 
-  const submitComment = async (parentId?: string) => {
-      if (!commentText.trim() || !googleToken) return;
-      
-      try {
-          const res = await fetch(`${API_URL}/api/comments/survey/${id}`, {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${googleToken}`
-              },
-              body: JSON.stringify({
-                  content: commentText,
-                  parentId: parentId || null
-              })
-          });
-          
-          if (res.ok) {
-              setCommentText('');
-              setReplyTo(null);
-              loadComments();
-          }
-      } catch {}
-  };
+const submitComment = async (parentId?: string) => {
+    if (!commentText.trim() || !googleToken) return;
+    
+    try {
+        const res = await fetch(`${API_URL}/api/comments/survey/${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${googleToken}`
+            },
+            body: JSON.stringify({
+                content: commentText,
+                parentId: parentId || null
+            })
+        });
+        
+        if (res.status === 401) {
+            // Токенът е изтекъл
+            localStorage.removeItem('google_token');
+            setGoogleToken(null);
+            setError('Сесията е изтекла. Влез отново с Google.');
+            return;
+        }
+        
+        if (res.ok) {
+            setCommentText('');
+            setReplyTo(null);
+            loadComments();
+        }
+    } catch {}
+};
 
   const upvoteComment = async (commentId: string) => {
       await fetch(`${API_URL}/api/comments/${commentId}/upvote`, { method: 'POST' });

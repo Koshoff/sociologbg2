@@ -17,23 +17,25 @@ public record ArticleResponse(
     UUID surveyId,
     String surveyTitle,
     LocalDateTime createdAt,
+    LocalDateTime surveyClosesAt,
     LocalDateTime publishedAt
 ) {
     public static ArticleResponse from(Article article) {
         return new ArticleResponse(
-            article.getId(),
-            article.getTitle(),
-            article.getContent(),
-            article.getSummary(),
-            article.getSlug(),
-            article.getMetaTitle(),
-            article.getMetaDescription(),
-            article.getSources(),
-            article.getStatus(),
-            article.getSurvey() != null ? article.getSurvey().getId() : null,
-            article.getSurvey() != null ? article.getSurvey().getTitle() : null,
-            article.getCreatedAt(),
-            article.getPublishedAt()
+                article.getId(),
+                article.getTitle(),
+                article.getContent(),
+                article.getSummary(),
+                article.getSlug(),
+                article.getMetaTitle(),
+                article.getMetaDescription(),
+                article.getSources(),
+                article.getStatus(),
+                article.getSurvey() != null ? article.getSurvey().getId() : null,
+                article.getSurvey() != null ? article.getSurvey().getTitle() : null,
+                article.getSurvey() != null ? article.getSurvey().getClosesAt() : null,  // ← ново
+                article.getCreatedAt(),
+                article.getPublishedAt()
         );
     }
 }
