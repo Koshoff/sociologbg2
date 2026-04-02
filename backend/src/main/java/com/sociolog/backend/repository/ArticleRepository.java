@@ -10,6 +10,6 @@ import java.util.UUID;
 public interface ArticleRepository extends JpaRepository<Article, UUID> {
     List<Article> findByStatusOrderByPublishedAtDesc(String status);
     List<Article> findAllByOrderByCreatedAtDesc();
-    @Query("SELECT a FROM Article a JOIN a.survey s WHERE a.status = 'published' AND s.isActive = true ORDER BY a.publishedAt DESC")
+    @Query("SELECT a FROM Article a JOIN a.survey s WHERE a.status = 'published' AND s.isActive = true AND s.closesAt > CURRENT_TIMESTAMP ORDER BY a.publishedAt DESC")
     List<Article> findByStatusAndSurveyIsActiveTrue(String status);
 }

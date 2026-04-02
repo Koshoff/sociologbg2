@@ -360,27 +360,7 @@ export default function SurveyPage() {
       <p className="text-sm text-gray-500 font-bold">Благодарим за участието.</p>
     </div>
 
-    {googleToken && (
-      <div className="border-2 border-blue-600 p-4">
-        <p className="text-xs font-black text-blue-600 uppercase tracking-wider mb-3">
-          💬 Какво стои зад твоя избор?
-        </p>
-        <textarea
-          value={commentText}
-          onChange={e => setCommentText(e.target.value)}
-          placeholder="Сподели мнението си..."
-          rows={3}
-          className="w-full border-2 border-gray-900 px-4 py-3 text-sm font-bold focus:outline-none focus:border-blue-600 resize-none"
-        />
-        <button
-          onClick={() => submitComment()}
-          disabled={!commentText.trim()}
-          className="mt-2 w-full bg-blue-600 text-white py-2 text-xs font-black tracking-widest uppercase hover:bg-blue-700 disabled:opacity-40 transition-colors"
-        >
-          СПОДЕЛИ
-        </button>
-      </div>
-    )}
+    
   </div>
             )}
           </div>
@@ -427,132 +407,131 @@ export default function SurveyPage() {
           </div>
         </div>
       </main>
-      {/* Коментари */}
-    <section className="max-w-3xl mx-auto px-6 pb-12">
-      <div className="border-b-2 border-gray-900 pb-2 mb-6 flex justify-between items-center">
-        <p className="text-xs font-black text-gray-900 tracking-widest uppercase">
-          Дискусия · {comments.length} коментара
-        </p>
-      </div>
 
-      {/* Форма за коментар */}
-      {googleToken ? (
-        <div className="mb-8">
-          <textarea
-            value={commentText}
-            onChange={e => setCommentText(e.target.value)}
-            placeholder={replyTo ? `Отговаряш на ${replyTo.hash.slice(0, 8)}...` : 'Напиши коментар...'}
-            rows={3}
-            className="w-full border-2 border-gray-900 px-4 py-3 text-sm font-bold focus:outline-none focus:border-blue-600 resize-none"
-          />
-          <div className="flex gap-2 mt-2">
+      {/* Коментари */}
+<section className="max-w-3xl mx-auto px-6 pb-16">
+  <div className="flex items-center gap-3 mb-8">
+    <h2 className="text-sm font-black text-gray-900 tracking-widest uppercase">
+      Дискусия
+    </h2>
+    <span className="text-xs font-bold text-gray-400">{comments.length} коментара</span>
+  </div>
+
+  {/* Форма за коментар */}
+  {googleToken ? (
+    <div className="mb-8 bg-gray-50 p-4 rounded-sm">
+      <p className="text-xs font-black text-gray-500 uppercase tracking-wider mb-3">
+        {hasVoted ? '💬 Защо гласува така?' : 'Напиши коментар'}
+      </p>
+      <textarea
+        value={commentText}
+        onChange={e => setCommentText(e.target.value)}
+        placeholder={replyTo ? `Отговаряш на #${replyTo.hash.slice(0, 8)}...` : 'Сподели мнението си...'}
+        rows={3}
+        className="w-full bg-white border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-blue-400 resize-none rounded-sm"
+      />
+      <div className="flex gap-2 mt-2 justify-end">
+        {replyTo && (
+          <button
+            onClick={() => setReplyTo(null)}
+            className="px-4 py-2 text-xs font-bold text-gray-400 hover:text-gray-900 uppercase tracking-wider transition-colors"
+          >
+            Откажи
+          </button>
+        )}
+        <button
+          onClick={() => submitComment(replyTo?.id)}
+          disabled={!commentText.trim()}
+          className="bg-blue-600 text-white px-6 py-2 text-xs font-black tracking-widest uppercase hover:bg-blue-700 disabled:opacity-40 transition-colors rounded-sm"
+        >
+          Изпрати
+        </button>
+      </div>
+    </div>
+  ) : (
+    <div className="bg-gray-50 p-6 mb-8 text-center rounded-sm">
+      <p className="text-sm font-bold text-gray-500 mb-4">
+        Влез с Google за да коментираш
+      </p>
+      {!showCommentLogin ? (
+        <button
+          onClick={() => setShowCommentLogin(true)}
+          className="bg-slate-900 text-white px-6 py-2 text-xs font-black tracking-widest uppercase hover:bg-blue-600 transition-colors rounded-sm"
+        >
+          Влез с Google
+        </button>
+      ) : (
+        <div id="comment-signin-button" className="flex justify-center" />
+      )}
+    </div>
+  )}
+
+  {/* Списък коментари */}
+  {loadingComments ? (
+    <div className="space-y-3">
+      {[1, 2].map(i => <div key={i} className="h-20 bg-gray-50 animate-pulse rounded-sm" />)}
+    </div>
+  ) : comments.length === 0 ? (
+    <p className="text-sm text-gray-400 font-bold text-center py-8">
+      Няма коментари още. Бъди първият!
+    </p>
+  ) : (
+    <div className="space-y-1">
+      {comments.map(comment => (
+        <div key={comment.id} className="py-4 border-b border-gray-100">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs font-black text-blue-600">#{comment.authorHash.slice(0, 8)}</span>
+            <span className="text-xs text-gray-300">·</span>
+            <span className="text-xs text-gray-400">
+              {new Date(comment.createdAt).toLocaleDateString('bg-BG')}
+            </span>
+          </div>
+          <p className="text-sm text-gray-900 mb-3 leading-relaxed">{comment.content}</p>
+          <div className="flex gap-4">
             <button
-              onClick={() => submitComment(replyTo?.id)}
-              disabled={!commentText.trim()}
-              className="bg-slate-900 text-white px-6 py-2 text-xs font-black tracking-widest uppercase hover:bg-blue-600 disabled:opacity-40 transition-colors"
+              onClick={() => upvoteComment(comment.id)}
+              className="text-xs font-bold text-gray-400 hover:text-blue-600 transition-colors flex items-center gap-1"
             >
-              ИЗПРАТИ
+              ▲ {comment.upvotes}
             </button>
-            {replyTo && (
+            {googleToken && (
               <button
-                onClick={() => setReplyTo(null)}
-                className="border-2 border-gray-900 px-4 py-2 text-xs font-black tracking-widest uppercase hover:bg-gray-50 transition-colors"
+                onClick={() => setReplyTo({ id: comment.id, hash: comment.authorHash })}
+                className="text-xs font-bold text-gray-400 hover:text-gray-900 transition-colors"
               >
-                ОТКАЖИ
+                Отговори
               </button>
             )}
           </div>
-        </div>
-      ) : (
-        <div className="border-2 border-gray-900 p-6 mb-8">
-          <p className="text-xs font-black text-gray-400 uppercase tracking-wider mb-4 text-center">
-            Влез с Google за да коментираш
-          </p>
-          {!showCommentLogin ? (
-            <button
-              onClick={() => setShowCommentLogin(true)}
-              className="w-full bg-slate-900 text-white py-2 text-xs font-black tracking-widest uppercase hover:bg-blue-600 transition-colors"
-            >
-              ВЛЕЗ С GOOGLE
-            </button>
-          ) : (
-            <div id="comment-signin-button" className="flex justify-center" />
+
+          {/* Reply-та */}
+          {comment.replies?.length > 0 && (
+            <div className="mt-3 ml-6 space-y-3 border-l-2 border-gray-100 pl-4">
+              {comment.replies.map((reply: any) => (
+                <div key={reply.id} className="py-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-black text-blue-600">#{reply.authorHash.slice(0, 8)}</span>
+                    <span className="text-xs text-gray-300">·</span>
+                    <span className="text-xs text-gray-400">
+                      {new Date(reply.createdAt).toLocaleDateString('bg-BG')}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-900 mb-2 leading-relaxed">{reply.content}</p>
+                  <button
+                    onClick={() => upvoteComment(reply.id)}
+                    className="text-xs font-bold text-gray-400 hover:text-blue-600 transition-colors"
+                  >
+                    ▲ {reply.upvotes}
+                  </button>
+                </div>
+              ))}
+            </div>
           )}
         </div>
-      )}
-
-      {/* Списък коментари */}
-      {loadingComments ? (
-        <div className="space-y-3">
-          {[1, 2].map(i => <div key={i} className="h-20 bg-gray-50 animate-pulse" />)}
-        </div>
-      ) : comments.length === 0 ? (
-        <div className="border-2 border-dashed border-gray-200 p-8 text-center">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-            Няма коментари още. Бъди първият!
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {comments.map(comment => (
-            <div key={comment.id} className="border-2 border-gray-900 p-4"
-              style={{ boxShadow: '4px -4px 0px rgba(0,0,0,0.08)' }}
-            >
-              <div className="flex justify-between items-start mb-2">
-                <span className="text-xs font-black text-blue-600 tracking-wider">
-                  #{comment.authorHash.slice(0, 8)}
-                </span>
-                <span className="text-xs font-bold text-gray-400">
-                  {new Date(comment.createdAt).toLocaleDateString('bg-BG')}
-                </span>
-              </div>
-              <p className="text-sm font-bold text-gray-900 mb-3">{comment.content}</p>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => upvoteComment(comment.id)}
-                  className="text-xs font-black text-gray-400 hover:text-blue-600 uppercase tracking-wider transition-colors"
-                >
-                  ▲ {comment.upvotes}
-                </button>
-                {googleToken && (
-                  <button
-                    onClick={() => setReplyTo({ id: comment.id, hash: comment.authorHash })}
-                    className="text-xs font-black text-gray-400 hover:text-gray-900 uppercase tracking-wider transition-colors"
-                  >
-                    ОТГОВОРИ
-                  </button>
-                )}
-              </div>
-
-              {/* Reply-та */}
-              {comment.replies?.length > 0 && (
-                <div className="mt-3 ml-4 space-y-3 border-l-2 border-gray-100 pl-4">
-                  {comment.replies.map((reply: any) => (
-                    <div key={reply.id}>
-                      <div className="flex justify-between items-start mb-1">
-                        <span className="text-xs font-black text-blue-600 tracking-wider">
-                          #{reply.authorHash.slice(0, 8)}
-                        </span>
-                        <span className="text-xs font-bold text-gray-400">
-                          {new Date(reply.createdAt).toLocaleDateString('bg-BG')}
-                        </span>
-                      </div>
-                      <p className="text-sm font-bold text-gray-900 mb-2">{reply.content}</p>
-                      <button
-                        onClick={() => upvoteComment(reply.id)}
-                        className="text-xs font-black text-gray-400 hover:text-blue-600 uppercase tracking-wider transition-colors"
-                      >
-                        ▲ {reply.upvotes}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-    </section>
+      ))}
+    </div>
+  )}
+</section>
 
       <Footer />
     </div>
