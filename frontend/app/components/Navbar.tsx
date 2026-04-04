@@ -23,7 +23,7 @@ export default function Navbar() {
         {/* Лого */}
         <Link href="/" className="flex items-center">
           <Image
-            src="/sociolog-bg-logo-trimmed.png"
+            src="/sociolog-logo.png"
             alt="Социолог.bg"
             width={150}
             height={32}

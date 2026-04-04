@@ -57,8 +57,8 @@ export default function ArchivePage() {
       <section className="bg-slate-900 pt-32 pb-16 px-6">
         <div className="max-w-7xl mx-auto">
           <div className={`transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-            <div className="inline-block border border-blue-500 px-3 py-1 mb-4">
-              <span className="text-blue-400 text-xs font-bold tracking-widest uppercase">
+            <div className="inline-block border border-green-500 px-3 py-1 mb-4">
+              <span className="text-green-500 text-xs font-bold tracking-widest uppercase">
                 ● {archived.length} приключили проучвания
               </span>
             </div>

@@ -68,12 +68,8 @@ export default function HomePage() {
       <section className="bg-slate-900 pt-28 pb-20 px-6">
         <div className="max-w-7xl mx-auto">
           <div className={`transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-            <div className="inline-block border border-blue-500 px-3 py-1 mb-6">
-              <span className="text-blue-400 text-xs font-bold tracking-widest uppercase">
-                ● {loading ? '...' : `${surveys.length} активни проучвания`}
-              </span>
-            </div>
-            <h1 className="text-5xl md:text-7xl font-black text-white leading-none mb-6 tracking-tight">
+            
+            <h1 className="text-5xl md:text-7xl font-black text-white leading-none mb-6 mt-6 tracking-tight">
               ТВОЕТО МНЕНИЕ<br />
               <span className="text-blue-500">ИМА ЗНАЧЕНИЕ.</span>
             </h1>
@@ -214,7 +210,7 @@ export default function HomePage() {
                       </div>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-amber-500"></div>
+                          <div className="w-2 h-2 bg-green-500"></div>
                           <span className="text-xs font-bold text-gray-400 tracking-wider uppercase">Активно</span>
                           {survey.category && (
                             <span className="text-xs font-black text-amber-600 border border-amber-200 px-2 py-0.5 tracking-wider uppercase">

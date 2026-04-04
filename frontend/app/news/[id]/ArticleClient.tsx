@@ -60,8 +60,8 @@ export default function ArticleClient({ article }: { article: Article }) {
                 <span className="text-blue-400 text-xs font-bold tracking-widest uppercase">НОВИНИ</span>
               </div>
               {article.surveyId && article.surveyClosesAt && new Date(article.surveyClosesAt) > new Date() && (
-                <div className="inline-block border border-amber-400 px-3 py-1">
-                  <span className="text-amber-400 text-xs font-bold tracking-widest uppercase">● Активна анкета</span>
+                <div className="inline-block border border-green-500 px-3 py-1">
+                  <span className="text-green-500 text-xs font-bold tracking-widest uppercase">● Активна анкета</span>
                 </div>
               )}
             </div>

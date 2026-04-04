@@ -61,8 +61,8 @@ export default function NewsPage() {
       <section className="bg-slate-900 pt-32 pb-16 px-6">
         <div className="max-w-7xl mx-auto">
           <div className={`transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-            <div className="inline-block border border-blue-500 px-3 py-1 mb-4">
-              <span className="text-blue-400 text-xs font-bold tracking-widest uppercase">
+            <div className="inline-block border border-green-500 px-3 py-1 mb-4">
+              <span className="text-green-500 text-xs font-bold tracking-widest uppercase">
                 ● {articles.length} статии
               </span>
             </div>
@@ -172,12 +172,12 @@ export default function NewsPage() {
                   }}
                 >
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="bg-amber-500 px-3 py-1">
+                    <div className="bg-green-500 px-3 py-1">
                       <span className="text-white text-xs font-black tracking-widest uppercase">FEATURED</span>
                     </div>
                     {featured.surveyId && featured.surveyClosesAt && new Date(featured.surveyClosesAt) > new Date() && (
-                      <div className="border border-amber-400 px-3 py-1">
-                        <span className="text-amber-600 text-xs font-black tracking-widest uppercase">● Активна анкета</span>
+                      <div className="border border-green-500 px-3 py-1">
+                        <span className="bg-green-500 text-xs font-black tracking-widest uppercase">● Активна анкета</span>
                       </div>
                     )}
                   </div>
@@ -214,7 +214,7 @@ export default function NewsPage() {
                     }}
                   >
                     {article.surveyId && article.surveyClosesAt && new Date(article.surveyClosesAt) > new Date() && (
-                    <span className="text-xs font-black text-amber-600 tracking-widest uppercase mb-2 block">
+                    <span className="text-xs font-black bg-green-500 tracking-widest uppercase mb-2 block">
                       ● Активна анкета
                     </span>
                     )}

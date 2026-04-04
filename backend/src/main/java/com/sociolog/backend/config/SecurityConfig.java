@@ -3,6 +3,7 @@ package com.sociolog.backend.config;
 import com.sociolog.backend.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -53,8 +55,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/articles/with-active-surveys").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // Admin login е публичен
+                        // Аналитики — само запис, без лични данни
+                        .requestMatchers(HttpMethod.POST, "/api/analytics/**").permitAll()
+
+                        // Admin login/logout са публични
                         .requestMatchers(HttpMethod.POST, "/api/admin/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/admin/logout").permitAll()
 
                         // Всички останали admin endpoints изискват ROLE_ADMIN
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
@@ -86,27 +92,28 @@ public class SecurityConfig {
                     HttpServletResponse response,
                     FilterChain chain) throws ServletException, IOException {
 
-                // Вземаме Authorization header
-                // Изглежда така: "Bearer xxxxx.yyyyy.zzzzz"
-                String authHeader = request.getHeader("Authorization");
-
-                if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                    String token = authHeader.substring(7); // Махаме "Bearer "
-
-                    if (jwtService.isTokenValid(token)) {
-                        String username = jwtService.extractUsername(token);
-
-                        // Казваме на Spring Security че потребителят е автентикиран
-                        UsernamePasswordAuthenticationToken auth =
-                                new UsernamePasswordAuthenticationToken(
-                                        username,
-                                        null,
-                                        List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
-                                );
-
-                        SecurityContextHolder.getContext()
-                                .setAuthentication(auth);
+                String token = null;
+                Cookie[] cookies = request.getCookies();
+                if (cookies != null) {
+                    for (Cookie cookie : cookies) {
+                        if ("adminToken".equals(cookie.getName())) {
+                            token = cookie.getValue();
+                            break;
+                        }
                     }
+                }
+
+                if (token != null && jwtService.isTokenValid(token)) {
+                    String username = jwtService.extractUsername(token);
+
+                    UsernamePasswordAuthenticationToken auth =
+                            new UsernamePasswordAuthenticationToken(
+                                    username,
+                                    null,
+                                    List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                            );
+
+                    SecurityContextHolder.getContext().setAuthentication(auth);
                 }
 
                 chain.doFilter(request, response);
@@ -115,16 +122,21 @@ public class SecurityConfig {
     }
 
     @Bean
+    public FilterRegistrationBean<OncePerRequestFilter> jwtAuthFilterRegistration() {
+        FilterRegistrationBean<OncePerRequestFilter> registration = new FilterRegistrationBean<>(jwtAuthFilter());
+        registration.setEnabled(false);
+        return registration;
+    }
+
+    @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of(
                 "http://localhost:3000",
-                "https://sociolog.online",
-                "https://www.sociolog.online",
                 "https://sociolog.bg",
                 "https://www.sociolog.bg"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Content-Type", "Authorization"));
+        config.setAllowedHeaders(List.of("Content-Type"));
         config.setAllowCredentials(true);
         config.setMaxAge(3600L);
 

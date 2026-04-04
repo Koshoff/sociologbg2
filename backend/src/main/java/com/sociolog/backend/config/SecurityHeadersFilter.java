@@ -97,7 +97,7 @@ public class SecurityHeadersFilter extends OncePerRequestFilter {
                         "script-src 'self' https://accounts.google.com; " +
                         "style-src 'self' 'unsafe-inline'; " +
                         "img-src 'self' data: https://lh3.googleusercontent.com; " +
-                        "connect-src 'self' https://sociolog.online https://www.sociolog.online https://sociolog.bg https://www.sociolog.bg; " +
+                        "connect-src 'self' https://sociolog.bg https://www.sociolog.bg; " +
                         "frame-src https://accounts.google.com; " +
                         "frame-ancestors 'none';"
         );

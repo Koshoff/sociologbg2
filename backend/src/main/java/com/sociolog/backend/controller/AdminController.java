@@ -3,10 +3,14 @@ package com.sociolog.backend.controller;
 import com.sociolog.backend.dto.*;
 import com.sociolog.backend.entity.Survey;
 import com.sociolog.backend.service.AdminService;
+import com.sociolog.backend.service.AnalyticsService;
 import com.sociolog.backend.service.SurveyService;
 import com.sociolog.backend.service.VoteService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +35,7 @@ public class AdminController {
     private final AdminService adminService;
     private final SurveyService surveyService;
     private final VoteService voteService;
+    private final AnalyticsService analyticsService;
 
     /**
      * POST /api/admin/login
@@ -38,21 +43,43 @@ public class AdminController {
      * Приема username и парола, връща JWT токен.
      */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request,
+                                   HttpServletResponse response) {
         String token = adminService.login(
                 request.getUsername(),
                 request.getPassword()
         );
 
         if (token == null) {
-            // Грешни credentials — не казваме кое точно е грешно
             return ResponseEntity.status(401).body(Map.of(
                     "success", false,
-                    "message", "Грешно потребителско име или парола"
+                    "message", "Грешно потребителско ime или парола"
             ));
         }
 
-        return ResponseEntity.ok(new LoginResponse(token, request.getUsername()));
+        ResponseCookie cookie = ResponseCookie.from("adminToken", token)
+                .httpOnly(true)
+                .secure(true)
+                .path("/api")
+                .maxAge(86400)
+                .sameSite("Strict")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        return ResponseEntity.ok(Map.of("success", true));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        ResponseCookie cookie = ResponseCookie.from("adminToken", "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/api")
+                .maxAge(0)
+                .sameSite("Strict")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        return ResponseEntity.ok(Map.of("success", true));
     }
 
     /**
@@ -116,6 +143,16 @@ public class AdminController {
      * GET /api/admin/surveys/{id}/stats
      * Връща детайлна статистика за проучване.
      */
+    /**
+     * GET /api/admin/analytics
+     * Връща агрегирана статистика за прегледите на страниците.
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/analytics")
+    public ResponseEntity<?> getAnalytics() {
+        return ResponseEntity.ok(analyticsService.getStats());
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/surveys/{id}/stats")
     public ResponseEntity<?> getStats(@PathVariable UUID id) {

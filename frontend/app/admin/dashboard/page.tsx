@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const API_URL = '';
 
 interface Survey {
   id: string;
@@ -30,13 +30,26 @@ interface Article {
   publishedAt: string | null;
 }
 
-type Tab = 'surveys' | 'articles';
+type Tab = 'surveys' | 'articles' | 'analytics';
+
+interface PageStat {
+  page: string;
+  totalViews: number;
+  avgDurationSeconds: number;
+}
+
+interface AnalyticsData {
+  pageStats: PageStat[];
+  totalViews: number;
+  avgDurationSeconds: number;
+}
 
 export default function AdminDashboard() {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>('articles');
   const [surveys, setSurveys] = useState<Survey[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -73,33 +86,37 @@ export default function AdminDashboard() {
   const [publishSurveyDescription, setPublishSurveyDescription] = useState('');
   const [publishClosesAt, setPublishClosesAt] = useState('');
 
-  const getToken = () => localStorage.getItem('adminToken');
-
   const authFetch = (url: string, options: RequestInit = {}) => {
     return fetch(url, {
       ...options,
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getToken()}`,
         ...options.headers,
       },
     });
   };
 
   useEffect(() => {
-    if (!getToken()) { router.push('/admin'); return; }
     loadAll();
   }, []);
 
   const loadAll = async () => {
     setLoading(true);
     try {
-      const [s, a] = await Promise.all([
-        authFetch(`${API_URL}/api/admin/surveys`).then(r => r.json()),
-        authFetch(`${API_URL}/api/articles/admin/all`).then(r => r.json()),
+      const [sRes, aRes, anRes] = await Promise.all([
+        authFetch(`${API_URL}/api/admin/surveys`),
+        authFetch(`${API_URL}/api/articles/admin/all`),
+        authFetch(`${API_URL}/api/admin/analytics`),
       ]);
+      if (sRes.status === 401 || aRes.status === 401) {
+        router.push('/admin');
+        return;
+      }
+      const [s, a, an] = await Promise.all([sRes.json(), aRes.json(), anRes.json()]);
       setSurveys(s);
       setArticles(a);
+      setAnalytics(an);
     } catch {
       setError('Грешка при зареждане');
     } finally {
@@ -190,8 +207,8 @@ export default function AdminDashboard() {
     } catch { setError('Грешка при публикуване'); }
   };
 
-  const logout = () => {
-    localStorage.removeItem('adminToken');
+  const logout = async () => {
+    await fetch(`${API_URL}/api/admin/logout`, { method: 'POST', credentials: 'include' });
     router.push('/admin');
   };
 
@@ -235,7 +252,7 @@ export default function AdminDashboard() {
 
         {/* Табове */}
         <div className="flex gap-px bg-gray-900 w-fit mb-8">
-          {(['articles', 'surveys'] as Tab[]).map((t) => (
+          {(['articles', 'surveys', 'analytics'] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -243,7 +260,7 @@ export default function AdminDashboard() {
                 tab === t ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
               }`}
             >
-              {t === 'articles' ? `Статии (${articles.length})` : `Анкети (${surveys.length})`}
+              {t === 'articles' ? `Статии (${articles.length})` : t === 'surveys' ? `Анкети (${surveys.length})` : 'Аналитики'}
             </button>
           ))}
         </div>
@@ -585,6 +602,47 @@ export default function AdminDashboard() {
             </div>
           </div>
         )}
+        {/* ─── АНАЛИТИКИ ─── */}
+        {tab === 'analytics' && (
+          <div>
+            {/* Summary cards */}
+            <div className="grid grid-cols-2 gap-4 mb-8">
+              <div className="border-2 border-gray-900 p-5">
+                <p className="text-xs font-black text-gray-400 tracking-widest uppercase mb-2">Общо прегледи</p>
+                <p className="text-4xl font-black text-gray-900">{analytics?.totalViews ?? 0}</p>
+              </div>
+              <div className="border-2 border-gray-900 p-5">
+                <p className="text-xs font-black text-gray-400 tracking-widest uppercase mb-2">Средно на страница</p>
+                <p className="text-4xl font-black text-gray-900">{analytics?.avgDurationSeconds ?? 0}с</p>
+              </div>
+            </div>
+
+            {/* Per-page table */}
+            <div className="border-2 border-gray-900">
+              <div className="grid grid-cols-3 gap-4 px-5 py-3 border-b-2 border-gray-900 bg-gray-50">
+                <p className="text-xs font-black text-gray-900 tracking-widest uppercase">Страница</p>
+                <p className="text-xs font-black text-gray-900 tracking-widest uppercase text-right">Прегледи</p>
+                <p className="text-xs font-black text-gray-900 tracking-widest uppercase text-right">Средно (с)</p>
+              </div>
+              {(analytics?.pageStats ?? []).length === 0 ? (
+                <div className="p-12 text-center">
+                  <p className="text-gray-400 font-bold tracking-wider uppercase text-sm">
+                    Няма данни — потребителите трябва да приемат аналитични бисквитки
+                  </p>
+                </div>
+              ) : (
+                (analytics?.pageStats ?? []).map((row) => (
+                  <div key={row.page} className="grid grid-cols-3 gap-4 px-5 py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors">
+                    <p className="text-sm font-bold text-gray-900 truncate">{row.page}</p>
+                    <p className="text-sm font-bold text-gray-600 text-right">{row.totalViews}</p>
+                    <p className="text-sm font-bold text-gray-600 text-right">{row.avgDurationSeconds}с</p>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
       </main>
     </div>
   );

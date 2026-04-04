@@ -2,11 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-// useRouter = програмна навигация
-// Като response.sendRedirect() в Java
 
-
-
+const API_URL = '';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -20,24 +17,18 @@ export default function AdminLoginPage() {
     setError(null);
 
     try {
-      const res = await fetch('https://sociolog.online/api/admin/login', {
+      const res = await fetch(`${API_URL}/api/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ username, password }),
       });
 
-      const data = await res.json();
-
-      if (res.ok && data.token) {
-        // Записваме токена в localStorage
-        // При всяка следваща заявка ще го изпращаме
-        localStorage.setItem('adminToken', data.token);
-        localStorage.setItem('adminUsername', data.username);
-
-        // Пренасочваме към dashboard-а
+      if (res.ok) {
         router.push('/admin/dashboard');
       } else {
-        setError(data.message || 'Грешно потребителско име или парола');
+        const data = await res.json();
+        setError(data.message || 'Грешно потребителско ime или парола');
       }
     } catch {
       setError('Грешка при свързване със сървъра');
@@ -58,7 +49,7 @@ export default function AdminLoginPage() {
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Потребителско име
+              Потребителско ime
             </label>
             <input
               type="text"
@@ -78,7 +69,6 @@ export default function AdminLoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-              // Enter клавишът също логва
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="••••••••"
             />

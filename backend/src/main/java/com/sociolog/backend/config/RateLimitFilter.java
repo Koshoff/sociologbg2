@@ -28,6 +28,9 @@ public class RateLimitFilter extends OncePerRequestFilter {
     // Admin login: 5 attempts per 5 minutes per IP — brute-force protection
     private final ConcurrentHashMap<String, Bucket> loginBuckets = new ConcurrentHashMap<>();
 
+    // Analytics: 60 page-view events per minute per IP
+    private final ConcurrentHashMap<String, Bucket> analyticsBuckets = new ConcurrentHashMap<>();
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     // Clears all buckets every 5 minutes to prevent unbounded memory growth.
@@ -56,6 +59,14 @@ public class RateLimitFilter extends OncePerRequestFilter {
         return Bucket.builder().addLimit(limit).build();
     }
 
+    private Bucket createAnalyticsBucket() {
+        Bandwidth limit = Bandwidth.classic(
+                60,
+                Refill.intervally(60, Duration.ofMinutes(1))
+        );
+        return Bucket.builder().addLimit(limit).build();
+    }
+
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -76,6 +87,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
             bucket = voteBuckets.computeIfAbsent(ip, k -> createVoteBucket());
         } else if ("POST".equals(method) && path.equals("/api/admin/login")) {
             bucket = loginBuckets.computeIfAbsent(ip, k -> createLoginBucket());
+        } else if ("POST".equals(method) && path.startsWith("/api/analytics")) {
+            bucket = analyticsBuckets.computeIfAbsent(ip, k -> createAnalyticsBucket());
         }
 
         if (bucket != null && !bucket.tryConsume(1)) {
