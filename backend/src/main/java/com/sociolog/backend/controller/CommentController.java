@@ -3,6 +3,8 @@ package com.sociolog.backend.controller;
 import com.sociolog.backend.dto.CommentRequest;
 import com.sociolog.backend.dto.CommentResponse;
 import com.sociolog.backend.service.CommentService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +29,7 @@ public class CommentController {
     @PostMapping("/survey/{surveyId}")
     public ResponseEntity<CommentResponse> addComment(
             @PathVariable UUID surveyId,
-            @RequestBody CommentRequest request,
+            @Valid @RequestBody CommentRequest request,
             @RequestHeader("Authorization") String authHeader
     ) {
         String googleToken = authHeader.replace("Bearer ", "");
@@ -36,7 +38,9 @@ public class CommentController {
 
     // Upvote коментар
     @PostMapping("/{commentId}/upvote")
-    public ResponseEntity<CommentResponse> upvote(@PathVariable UUID commentId) {
-        return ResponseEntity.ok(commentService.upvote(commentId));
+    public ResponseEntity<CommentResponse> upvote(
+            @PathVariable UUID commentId,
+            HttpServletRequest request) {
+        return ResponseEntity.ok(commentService.upvote(commentId, request.getRemoteAddr()));
     }
 }

@@ -31,6 +31,9 @@ public class RateLimitFilter extends OncePerRequestFilter {
     // Analytics: 60 page-view events per minute per IP
     private final ConcurrentHashMap<String, Bucket> analyticsBuckets = new ConcurrentHashMap<>();
 
+    // Upvotes: 30 per hour per IP
+    private final ConcurrentHashMap<String, Bucket> upvoteBuckets = new ConcurrentHashMap<>();
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     // Clears all buckets every 5 minutes to prevent unbounded memory growth.
@@ -40,6 +43,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
     public void cleanupBuckets() {
         voteBuckets.clear();
         loginBuckets.clear();
+        upvoteBuckets.clear();
     }
 
     private Bucket createVoteBucket() {
@@ -67,6 +71,14 @@ public class RateLimitFilter extends OncePerRequestFilter {
         return Bucket.builder().addLimit(limit).build();
     }
 
+    private Bucket createUpvoteBucket() {
+        Bandwidth limit = Bandwidth.classic(
+                30,
+                Refill.intervally(30, Duration.ofHours(1))
+        );
+        return Bucket.builder().addLimit(limit).build();
+    }
+
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -89,6 +101,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
             bucket = loginBuckets.computeIfAbsent(ip, k -> createLoginBucket());
         } else if ("POST".equals(method) && path.startsWith("/api/analytics")) {
             bucket = analyticsBuckets.computeIfAbsent(ip, k -> createAnalyticsBucket());
+        } else if ("POST".equals(method) && path.endsWith("/upvote")) {
+            bucket = upvoteBuckets.computeIfAbsent(ip, k -> createUpvoteBucket());
         }
 
         if (bucket != null && !bucket.tryConsume(1)) {

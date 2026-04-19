@@ -5,10 +5,11 @@ import Link from 'next/link';
 import { getSurveys, Survey } from '@/lib/api';
 import Navbar from '@/app/components/Navbar';
 import Footer from '@/app/components/Footer';
-
+import AdBanner from '@/app/components/AdBanner';
+import { SIDEBAR_ADS } from '@/app/config/ads';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-const SURVEYS_PER_PAGE = 3;
+const SURVEYS_PER_PAGE = 4;
 
 interface TopSurvey {
   id: string;
@@ -18,6 +19,7 @@ interface TopSurvey {
 
 interface Article {
   id: string;
+  slug: string | null;
   title: string;
   summary: string;
   publishedAt: string | null;
@@ -65,28 +67,28 @@ export default function HomePage() {
       <Navbar />
 
       {/* Hero */}
-      <section className="bg-slate-900 pt-28 pb-20 px-6">
+      <section className="bg-slate-900 pt-28 pb-20 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
           <div className={`transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-            
-            <h1 className="text-5xl md:text-7xl font-black text-white leading-none mb-6 mt-6 tracking-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-black text-white leading-none mb-6 mt-6 tracking-tight">
               ТВОЕТО МНЕНИЕ<br />
               <span className="text-blue-500">ИМА ЗНАЧЕНИЕ.</span>
             </h1>
-            <p className="text-gray-400 text-lg max-w-xl">
+            <p className="text-gray-400 text-base sm:text-lg max-w-xl">
               Анонимни и достоверни социологически проучвания.
               Гражданският вот е основата на демокрацията.
               Гласувайте без регистрация.
             </p>
           </div>
 
-          <div className="grid grid-cols-3 gap-px bg-gray-100 mt-10 max-w-xl">
+          {/* Фикс за счупването на Hero статистиката на мобилни */}
+          <div className="flex flex-col sm:grid sm:grid-cols-3 gap-px bg-gray-100 mt-10 max-w-xl">
             {[
               { label: 'АКТИВНИ', value: surveys.length.toString() },
               { label: 'ОБЩО ГЛАСОВЕ', value: totalVotes.toLocaleString('bg-BG') },
               { label: 'БЕЗ РЕГИСТРАЦИЯ', value: '✓' },
             ].map((stat) => (
-              <div key={stat.label} className="bg-slate-900 px-6 py-4">
+              <div key={stat.label} className="bg-slate-900 px-6 py-4 border-b sm:border-b-0 border-gray-800">
                 <p className="text-2xl font-black text-white">{stat.value}</p>
                 <p className="text-xs text-gray-500 font-bold tracking-wider mt-1">{stat.label}</p>
               </div>
@@ -96,12 +98,11 @@ export default function HomePage() {
       </section>
 
       {/* Основно тяло */}
-      <main className="max-w-7xl mx-auto px-6 py-12">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
         <div className="grid grid-cols-12 gap-6 items-start">
 
           {/* Лява колона — sticky */}
           <aside className="col-span-3 hidden lg:block sticky top-24 space-y-4">
-
             {/* Топ анкети */}
             <div className="border border-gray-200 p-5">
               <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b border-gray-200 pb-2 mb-4">
@@ -149,11 +150,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Реклама */}
-            <div className="border-2 border-dashed border-gray-200 p-5">
-              <p className="text-xs font-bold text-gray-300 tracking-widest uppercase text-center mb-3">Реклама</p>
-              <div className="h-48 bg-gray-50 border border-gray-100" />
-            </div>
+            <AdBanner banners={SIDEBAR_ADS} />
           </aside>
 
           {/* Централна колона */}
@@ -170,7 +167,7 @@ export default function HomePage() {
             {loading && (
               <div className="space-y-4">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-32 bg-gray-50 border border-gray-100 animate-pulse" />
+                  <div key={i} className="h-40 bg-gray-50 border border-gray-100 animate-pulse" />
                 ))}
               </div>
             )}
@@ -179,52 +176,63 @@ export default function HomePage() {
               <>
                 <div className="space-y-4">
                   {paginated.map((survey, index) => (
-                    <div
+                    <Link
                       key={survey.id}
-                      className={`border border-gray-200 p-6 shadow-sm transition-all duration-150 ${
+                      href={`/surveys/${survey.id}`}
+                      className={`block border border-gray-200 p-4 sm:p-6 shadow-sm transition-all duration-150 cursor-pointer ${
                         visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
                       }`}
                       style={{ transitionDelay: `${index * 100}ms` }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translate(-3px, 3px)';
-                        e.currentTarget.style.boxShadow = '6px -6px 0px rgba(0,0,0,0.15)';
+                        (e.currentTarget as HTMLElement).style.transform = 'translate(-3px, 3px)';
+                        (e.currentTarget as HTMLElement).style.boxShadow = '6px -6px 0px rgba(0,0,0,0.15)';
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translate(0, 0)';
-                        e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.1)';
+                        (e.currentTarget as HTMLElement).style.transform = 'translate(0, 0)';
+                        (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.1)';
                       }}
                     >
-                      <div className="flex justify-between items-start mb-4">
-                        <div className="flex-1 mr-4">
+                      {/* Фикс за хедъра на анкетата */}
+                      <div className="flex flex-col sm:flex-row justify-between items-start mb-4 gap-3">
+                        <div className="flex-1">
                           <h3 className="font-black text-gray-900 text-lg leading-tight">{survey.title}</h3>
                           {survey.description && (
                             <p className="text-gray-500 text-sm mt-2">{survey.description}</p>
                           )}
                         </div>
-                        <div className="text-right flex-shrink-0">
-                          <p className="text-xs font-bold text-gray-400 tracking-wider uppercase">До</p>
+                        <div className="text-left sm:text-right flex-shrink-0">
+                          <p className="text-[10px] font-bold text-gray-400 tracking-wider uppercase">Краен срок</p>
                           <p className="text-sm font-black text-gray-900">
                             {new Date(survey.closesAt).toLocaleDateString('bg-BG')}
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-green-500"></div>
-                          <span className="text-xs font-bold text-gray-400 tracking-wider uppercase">Активно</span>
-                          {survey.category && (
-                            <span className="text-xs font-black text-amber-600 border border-amber-200 px-2 py-0.5 tracking-wider uppercase">
+
+                      {/* Еднакви бутони (flex-1 ги прави с равна ширина) */}
+                      <div className="flex flex-row items-center gap-1.5 w-full mt-4">
+                        {/* Активно */}
+                        <div className="flex-1 h-9 flex items-center justify-center gap-1.5 overflow-hidden">
+                          <div className="w-1.5 h-1.5 bg-green-500 rounded-full shrink-0 animate-pulse"></div>
+                          <span className="text-[9px] sm:text-[10px] font-black text-green-700 tracking-wider uppercase truncate">Активно</span>
+                        </div>
+
+                        {/* Категория */}
+                        {survey.category && (
+                          <div className="flex-1 h-9 flex items-center justify-center border border-amber-200 px-1 overflow-hidden">
+                            <span className="text-[9px] sm:text-[10px] font-black text-amber-700 tracking-wider uppercase truncate">
                               {survey.category}
                             </span>
-                          )}
-                        </div>
-                        <Link href={`/surveys/${survey.id}`}>
-                          <button className="bg-blue-600 text-white px-6 py-2 text-xs font-black tracking-widest uppercase hover:bg-blue-700 transition-colors">
+                          </div>
+                        )}
+
+                        {/* Гласувай */}
+                        <div className="flex-1 h-9 flex items-center justify-center bg-blue-600 border border-blue-600 text-white px-1 overflow-hidden">
+                          <span className="text-[9px] sm:text-[10px] font-black tracking-widest uppercase truncate">
                             ГЛАСУВАЙ
-                          </button>
-                        </Link>
+                          </span>
+                        </div>
                       </div>
-                    </div>
+                    </Link>
                   ))}
 
                   {surveys.length === 0 && (
@@ -238,15 +246,15 @@ export default function HomePage() {
 
                 {/* Странирането */}
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-between mt-6 pt-4 border-t-2 border-gray-900">
+                  <div className="flex items-center justify-between mt-6 pt-4 border-t-2 border-gray-900 gap-2">
                     <button
                       onClick={() => setPage(p => Math.max(0, p - 1))}
                       disabled={page === 0}
-                      className="border-2 border-gray-900 px-3 py-2 text-xs font-black tracking-widest uppercase hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      className="border-2 border-gray-900 px-2 sm:px-3 py-2 text-[10px] sm:text-xs font-black tracking-widest uppercase hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                     >
-                      ← ПРЕДИШНА
+                      ←
                     </button>
-                    <div className="flex gap-1">
+                    <div className="flex gap-1 flex-wrap justify-center">
                       {Array.from({ length: totalPages }).map((_, i) => (
                         <button
                           key={i}
@@ -264,9 +272,9 @@ export default function HomePage() {
                     <button
                       onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
                       disabled={page === totalPages - 1}
-                      className="border-2 border-gray-900 px-3 py-2 text-xs font-black tracking-widest uppercase hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      className="border-2 border-gray-900 px-2 sm:px-3 py-2 text-[10px] sm:text-xs font-black tracking-widest uppercase hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                     >
-                      СЛЕДВАЩА →
+                      →
                     </button>
                   </div>
                 )}
@@ -274,12 +282,10 @@ export default function HomePage() {
             )}
           </section>
 
-
           {/* Мобилна допълнителна информация */}
           <div className="col-span-12 lg:hidden space-y-4 mt-4">
-
             {/* Топ анкети */}
-            <div className="border border-gray-200 p-5">
+            <div className="border border-gray-200 p-4">
               <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b border-gray-200 pb-2 mb-4">
                 Топ проучвания
               </p>
@@ -291,7 +297,7 @@ export default function HomePage() {
                         <span className="text-2xl font-black text-gray-200 leading-none w-6 flex-shrink-0">{i + 1}</span>
                         <div>
                           <p className="text-xs font-black text-gray-900 leading-tight">{s.title}</p>
-                          <p className="text-xs font-bold text-blue-600 mt-1">{Number(s.vote_count)} гласа</p>
+                          <p className="text-[10px] font-bold text-blue-600 mt-1">{Number(s.vote_count)} гласа</p>
                         </div>
                       </div>
                     </Link>
@@ -302,19 +308,24 @@ export default function HomePage() {
               )}
             </div>
 
+            {/* --- ПЪРВИ МОБИЛЕН БАНЕР --- */}
+            <div className="py-2">
+              <AdBanner banners={SIDEBAR_ADS} />
+            </div>
+
             {/* Последни новини */}
-            <div className="border border-gray-200 p-5">
+            <div className="border border-gray-200 p-4">
               <div className="flex justify-between items-center border-b-2 border-gray-900 pb-2 mb-4">
                 <p className="text-xs font-black text-gray-900 tracking-widest uppercase">Последни новини</p>
-                <Link href="/news" className="text-xs font-bold text-blue-600 uppercase tracking-wider">Всички →</Link>
+                <Link href="/news" className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Всички →</Link>
               </div>
               {latestNews.length > 0 ? (
                 <div className="space-y-3">
                   {latestNews.map((article) => (
-                    <Link key={article.id} href={`/news/${article.id}`}>
+                    <Link key={article.id} href={`/news/${article.slug || article.id}`}>
                       <div className="py-2 border-b border-gray-100 last:border-0">
                         <p className="text-xs font-black text-gray-900 leading-tight mb-1">{article.title}</p>
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
                           {new Date(article.publishedAt || article.createdAt).toLocaleDateString('bg-BG')}
                         </p>
                       </div>
@@ -322,36 +333,36 @@ export default function HomePage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Няма новини</p>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Няма новини</p>
               )}
             </div>
 
-            {/* Статистика */}
-            <div className="border border-gray-200 p-5">
+            {/* Статистика (Сменена структура за мобилни) */}
+            <div className="border border-gray-200 p-4">
               <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b border-gray-200 pb-2 mb-4">
                 Статистика
               </p>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <p className="text-lg font-black text-gray-900">{surveys.length}</p>
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Активни</p>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="bg-gray-50 p-2 text-center border border-gray-100">
+                  <p className="text-base font-black text-gray-900 leading-none mb-1">{surveys.length}</p>
+                  <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Активни</p>
                 </div>
-                <div>
-                  <p className="text-lg font-black text-gray-900">{totalVotes.toLocaleString('bg-BG')}</p>
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Гласове</p>
+                <div className="bg-gray-50 p-2 text-center border border-gray-100">
+                  <p className="text-base font-black text-gray-900 leading-none mb-1">{totalVotes >= 1000 ? (totalVotes/1000).toFixed(1) + 'k' : totalVotes}</p>
+                  <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Гласове</p>
                 </div>
-                <div>
-                  <p className="text-lg font-black text-gray-900">{page + 1}/{totalPages || 1}</p>
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Страница</p>
+                <div className="bg-gray-50 p-2 text-center border border-gray-100">
+                  <p className="text-base font-black text-gray-900 leading-none mb-1">{page + 1}/{totalPages || 1}</p>
+                  <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Стр.</p>
                 </div>
               </div>
             </div>
-
           </div>
+
+          
 
           {/* Дясна колона — sticky */}
           <aside className="col-span-3 hidden lg:block sticky top-24 space-y-4">
-
             {/* Последни новини */}
             <div className="border border-gray-200 p-5">
               <div className="flex justify-between items-center border-b-2 border-gray-900 pb-2 mb-4">
@@ -365,7 +376,7 @@ export default function HomePage() {
               {latestNews.length > 0 ? (
                 <div className="space-y-3">
                   {latestNews.map((article) => (
-                    <Link key={article.id} href={`/news/${article.id}`}>
+                    <Link key={article.id} href={`/news/${article.slug || article.id}`}>
                       <div className="py-2 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors cursor-pointer">
                         <p className="text-xs font-black text-gray-900 leading-tight mb-1">{article.title}</p>
                         <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
@@ -395,13 +406,8 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* Реклама */}
-            <div className="border-2 border-dashed border-gray-200 p-5">
-              <p className="text-xs font-bold text-gray-300 tracking-widest uppercase text-center mb-3">Реклама</p>
-              <div className="h-48 bg-gray-50 border border-gray-100" />
-            </div>
+            <AdBanner banners={SIDEBAR_ADS} />
           </aside>
-
         </div>
       </main>
 

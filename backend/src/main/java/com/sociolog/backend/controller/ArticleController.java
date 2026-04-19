@@ -1,18 +1,26 @@
 package com.sociolog.backend.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sociolog.backend.dto.ArticleRequest;
 import com.sociolog.backend.dto.ArticleResponse;
+import com.sociolog.backend.dto.GenerateRequest;
+import com.sociolog.backend.dto.PublishRequest;
 import com.sociolog.backend.entity.Article;
 import com.sociolog.backend.service.AnthropicService;
 import com.sociolog.backend.service.ArticleService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import java.time.LocalDateTime;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/articles")
 @RequiredArgsConstructor
@@ -20,8 +28,8 @@ public class ArticleController {
 
     private final ArticleService articleService;
     private final AnthropicService anthropicService;
+    private final ObjectMapper objectMapper;
 
-    // Публични endpoints
     @GetMapping
     public ResponseEntity<List<ArticleResponse>> getPublished() {
         return ResponseEntity.ok(articleService.getPublished()
@@ -29,11 +37,11 @@ public class ArticleController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ArticleResponse> getById(@PathVariable UUID id) {
+    public ResponseEntity<ArticleResponse> getById(@PathVariable String id) {
         try {
-            return ResponseEntity.ok(ArticleResponse.from(articleService.getById(id)));
+            return ResponseEntity.ok(ArticleResponse.from(articleService.getBySlugOrId(id)));
         } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build(); // връща 404 вместо 500
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -42,7 +50,6 @@ public class ArticleController {
         return ResponseEntity.ok(articleService.getWithActiveSurveys()
                 .stream().map(ArticleResponse::from).toList());
     }
-
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/all")
@@ -53,80 +60,58 @@ public class ArticleController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/create")
-    public ResponseEntity<ArticleResponse> create(@RequestBody Map<String, String> body) {
-        Article article = articleService.create(
-                body.get("title"),
-                body.get("content"),
-                body.get("summary"),
-                body.get("slug"),
-                body.get("metaTitle"),
-                body.get("metaDescription"),
-                body.get("sources"),
-                body.get("category")
-        );
+    public ResponseEntity<ArticleResponse> create(@Valid @RequestBody ArticleRequest request) {
+        Article article = articleService.create(request);
         return ResponseEntity.ok(ArticleResponse.from(article));
     }
 
-
-    @PutMapping("/admin/{id}/update")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ArticleResponse> update(@PathVariable UUID id, @RequestBody Map<String, String> body) {
-        Article article = articleService.update(
-                id,
-                body.get("title"),
-                body.get("content"),
-                body.get("summary"),
-                body.get("slug"),
-                body.get("metaTitle"),
-                body.get("metaDescription"),
-                body.get("sources"),
-                body.get("category")
-        );
+    @PutMapping("/admin/{id}/update")
+    public ResponseEntity<ArticleResponse> update(
+            @PathVariable UUID id,
+            @Valid @RequestBody ArticleRequest request) {
+        Article article = articleService.update(id, request);
         return ResponseEntity.ok(ArticleResponse.from(article));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/{id}/publish")
-    public ResponseEntity<ArticleResponse> publish(@PathVariable UUID id, @RequestBody Map<String, String> body) {
-        Article article = articleService.publish(
-            id,
-            body.get("surveyTitle"),
-            body.get("surveyDescription"),
-            LocalDateTime.parse(body.get("closesAt"))
-        );
+    public ResponseEntity<ArticleResponse> publish(
+            @PathVariable UUID id,
+            @Valid @RequestBody PublishRequest request) {
+        Article article = articleService.publish(id, request);
         return ResponseEntity.ok(ArticleResponse.from(article));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/generate")
-        public ResponseEntity<?> generate(@RequestBody Map<String, String> body) {
-            try {
-                String json = anthropicService.generateArticle(body.get("topic"));
-                // Парсваме JSON отговора
-                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-                Map<String, String> parsed = mapper.readValue(json, Map.class);
+    public ResponseEntity<?> generate(@Valid @RequestBody GenerateRequest request) {
+        try {
+            String json = anthropicService.generateArticle(request.getTopic());
+            Map<String, String> parsed = objectMapper.readValue(json, Map.class);
 
-                Article article = articleService.create(
-                        parsed.get("title"),
-                        parsed.get("content"),
-                        parsed.get("summary"),
-                        parsed.get("slug"),
-                        parsed.get("metaTitle"),
-                        parsed.get("metaDescription"),
-                        parsed.get("sources"),
-                        parsed.get("category")
-                );
+            ArticleRequest articleRequest = new ArticleRequest();
+            articleRequest.setTitle(parsed.get("title"));
+            articleRequest.setContent(parsed.get("content"));
+            articleRequest.setSummary(parsed.get("summary"));
+            articleRequest.setSlug(parsed.get("slug"));
+            articleRequest.setMetaTitle(parsed.get("metaTitle"));
+            articleRequest.setMetaDescription(parsed.get("metaDescription"));
+            articleRequest.setSources(parsed.get("sources"));
+            articleRequest.setCategory(parsed.get("category"));
 
-                Map<String, Object> result = new java.util.HashMap<>();
-                result.put("article", ArticleResponse.from(article));
-                result.put("surveyQuestion", parsed.get("surveyQuestion"));
+            Article article = articleService.create(articleRequest);
 
-                return ResponseEntity.ok(result);
-            } catch (Exception e) {
-                return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
-            }
+            Map<String, Object> result = new HashMap<>();
+            result.put("article", ArticleResponse.from(article));
+            result.put("surveyQuestion", parsed.get("surveyQuestion"));
+
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("Article generation failed", e);
+            return ResponseEntity.status(500).body(Map.of(
+                    "success", false,
+                    "message", "Грешка при генериране. Опитайте отново."));
         }
-
-
-
+    }
 }

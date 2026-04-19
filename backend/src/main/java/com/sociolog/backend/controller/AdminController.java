@@ -5,7 +5,10 @@ import com.sociolog.backend.entity.Survey;
 import com.sociolog.backend.service.AdminService;
 import com.sociolog.backend.service.AnalyticsService;
 import com.sociolog.backend.service.SurveyService;
+import com.sociolog.backend.service.TokenRevocationService;
 import com.sociolog.backend.service.VoteService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +39,7 @@ public class AdminController {
     private final SurveyService surveyService;
     private final VoteService voteService;
     private final AnalyticsService analyticsService;
+    private final TokenRevocationService tokenRevocationService;
 
     /**
      * POST /api/admin/login
@@ -70,7 +74,16 @@ public class AdminController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletResponse response) {
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+        // Revoke the current token so it cannot be reused even before it expires
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("adminToken".equals(cookie.getName())) {
+                    tokenRevocationService.revokeToken(cookie.getValue());
+                    break;
+                }
+            }
+        }
         ResponseCookie cookie = ResponseCookie.from("adminToken", "")
                 .httpOnly(true)
                 .secure(true)

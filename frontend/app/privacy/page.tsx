@@ -99,9 +99,9 @@ export default function PrivacyPage() {
                   {
                     name: 'Задължителни (функционални)',
                     basis: 'Легитимен интерес / техническа необходимост',
-                    examples: 'adminToken, cookieConsent',
-                    duration: 'adminToken: 24 ч. · cookieConsent: 1 година',
-                    desc: 'Осигуряват правилното функциониране на сайта — сесия за администратори и запаметяване на вашия избор за бисквитки.',
+                    examples: 'cookieConsent, session',
+                    duration: 'session: 24 ч. · cookieConsent: 1 година',
+                    desc: 'Осигуряват правилното функциониране на сайта — сигурна сесия и запаметяване на вашия избор за бисквитки.',
                     required: true,
                   },
                   {
@@ -245,7 +245,7 @@ export default function PrivacyPage() {
                       ['Коментари', 'До поискано изтриване', 'Публично видимо съдържание'],
                       ['Аналитики (page views)', 'Неограничен (агрегирани)', 'Подобряване на UX'],
                       ['Сървърни логове', '30 дни', 'Сигурност и дебъгване'],
-                      ['adminToken (cookie)', '24 часа', 'Сесия на администратор'],
+                      ['Сесия (бисквитка)', '24 часа', 'Сигурна сесия за достъп до сайта'],
                     ].map(([type, period, reason]) => (
                       <tr key={type}>
                         <td className="py-2 pr-4 font-medium text-gray-900">{type}</td>

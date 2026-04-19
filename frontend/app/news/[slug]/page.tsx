@@ -12,24 +12,26 @@ interface Article {
   metaTitle: string | null;
   metaDescription: string | null;
   sources: string | null;
+  category: string | null;
   status: string;
   surveyId: string | null;
   surveyTitle: string | null;
   surveyClosesAt: string | null;
   createdAt: string;
   publishedAt: string | null;
+  imageUrl: string | null;
 }
 
-async function getArticle(id: string): Promise<Article> {
-  const res = await fetch(`${API_URL}/api/articles/${id}`, {
+async function getArticle(slug: string): Promise<Article> {
+  const res = await fetch(`${API_URL}/api/articles/${slug}`, {
     cache: 'no-store'
   });
   return res.json();
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
-  const { id } = await params;
-  const article = await getArticle(id);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const article = await getArticle(slug);
   return {
     title: article.metaTitle || article.title,
     description: article.metaDescription || article.summary,
@@ -38,12 +40,13 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       description: article.metaDescription || article.summary,
       type: 'article',
       publishedTime: article.publishedAt || article.createdAt,
+      ...(article.imageUrl ? { images: [{ url: article.imageUrl }] } : {}),
     },
   };
 }
 
-export default async function ArticlePage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const article = await getArticle(id);
+export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const article = await getArticle(slug);
   return <ArticleClient article={article} />;
 }

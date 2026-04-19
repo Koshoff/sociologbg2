@@ -42,6 +42,15 @@ public class Article {
     @Column(nullable = false)
     private String status = "draft";
 
+    @Column(name = "ai_generated", nullable = false)
+    private boolean aiGenerated = false;
+
+    @Column(name = "ai_accuracy_score")
+    private Integer aiAccuracyScore;
+
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "survey_id")
     private Survey survey;

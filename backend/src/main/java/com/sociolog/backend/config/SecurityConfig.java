@@ -1,32 +1,22 @@
 package com.sociolog.backend.config;
 
 import com.sociolog.backend.service.JwtService;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import com.sociolog.backend.service.TokenRevocationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
 import java.util.List;
 
 @Configuration
@@ -36,6 +26,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtService jwtService;
+    private final TokenRevocationService tokenRevocationService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -45,87 +36,28 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Публични endpoints
                         .requestMatchers(HttpMethod.GET,  "/api/surveys/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/votes/**").permitAll()
                         .requestMatchers(HttpMethod.GET,  "/api/votes/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/comments/**").permitAll()
+                        .requestMatchers(HttpMethod.GET,  "/api/comments/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/comments/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/votes/top-surveys").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/articles/with-active-surveys").permitAll()
+                        .requestMatchers(HttpMethod.GET,  "/api/votes/top-surveys").permitAll()
+                        .requestMatchers(HttpMethod.GET,  "/api/articles/with-active-surveys").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                        // Аналитики — само запис, без лични данни
                         .requestMatchers(HttpMethod.POST, "/api/analytics/**").permitAll()
-
-                        // Admin login/logout са публични
                         .requestMatchers(HttpMethod.POST, "/api/admin/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/admin/logout").permitAll()
-
-                        // Всички останали admin endpoints изискват ROLE_ADMIN
+                        .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/articles/admin/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/articles/admin/generate").hasRole("ADMIN")
-
-
                         .requestMatchers(HttpMethod.GET, "/api/articles/**").permitAll()
-
                         .anyRequest().denyAll()
                 )
-                // Добавяме JWT филтъра преди стандартния auth филтър
-                .addFilterBefore(jwtAuthFilter(),
+                .addFilterBefore(
+                        new JwtAuthFilter(jwtService, tokenRevocationService),
                         UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
-    }
-
-    /**
-     * JWT филтърът проверява токена при всяка заявка към /api/admin/**
-     * Ако токенът е валиден → потребителят е автентикиран като ADMIN
-     */
-    @Bean
-    public OncePerRequestFilter jwtAuthFilter() {
-        return new OncePerRequestFilter() {
-            @Override
-            protected void doFilterInternal(
-                    HttpServletRequest request,
-                    HttpServletResponse response,
-                    FilterChain chain) throws ServletException, IOException {
-
-                String token = null;
-                Cookie[] cookies = request.getCookies();
-                if (cookies != null) {
-                    for (Cookie cookie : cookies) {
-                        if ("adminToken".equals(cookie.getName())) {
-                            token = cookie.getValue();
-                            break;
-                        }
-                    }
-                }
-
-                if (token != null && jwtService.isTokenValid(token)) {
-                    String username = jwtService.extractUsername(token);
-
-                    UsernamePasswordAuthenticationToken auth =
-                            new UsernamePasswordAuthenticationToken(
-                                    username,
-                                    null,
-                                    List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
-                            );
-
-                    SecurityContextHolder.getContext().setAuthentication(auth);
-                }
-
-                chain.doFilter(request, response);
-            }
-        };
-    }
-
-    @Bean
-    public FilterRegistrationBean<OncePerRequestFilter> jwtAuthFilterRegistration() {
-        FilterRegistrationBean<OncePerRequestFilter> registration = new FilterRegistrationBean<>(jwtAuthFilter());
-        registration.setEnabled(false);
-        return registration;
     }
 
     @Bean

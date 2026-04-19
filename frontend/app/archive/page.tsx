@@ -2,6 +2,8 @@
 
 import Navbar from '@/app/components/Navbar';
 import Footer from '@/app/components/Footer';
+import AdBanner from '@/app/components/AdBanner';
+import { SIDEBAR_ADS } from '@/app/config/ads';
 
 import { useEffect, useState } from 'react';
 
@@ -96,12 +98,7 @@ export default function ArchivePage() {
               </div>
             </div>
 
-            <div className="border border-dashed border-gray-100 p-5">
-              <p className="text-xs font-bold text-gray-300 tracking-widest uppercase text-center mb-4">
-                Реклама
-              </p>
-              <div className="h-48 bg-gray-50 border border-gray-100" />
-            </div>
+            <AdBanner banners={SIDEBAR_ADS} />
 
             <div className="border border-gray-200 p-5">
               <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b border-gray-200 pb-2 mb-4">
@@ -311,12 +308,7 @@ export default function ArchivePage() {
               })}
             </div>
 
-            <div className="border border-dashed border-gray-100 p-5">
-              <p className="text-xs font-bold text-gray-300 tracking-widest uppercase text-center mb-4">
-                Реклама
-              </p>
-              <div className="h-48 bg-gray-50 border border-gray-100" />
-            </div>
+            <AdBanner banners={SIDEBAR_ADS} />
 
             <div className="border border-gray-200 p-5">
               <p className="text-xs font-black text-gray-900 tracking-widest uppercase border-b-2 border-gray-900 pb-2 mb-3">

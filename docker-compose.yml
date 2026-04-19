@@ -6,60 +6,69 @@ services:
     container_name: survey_db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB_FILE: /run/secrets/db_name
+      POSTGRES_USER_FILE: /run/secrets/db_user
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    secrets:
+      - db_name
+      - db_user
+      - db_password
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/src/main/resources/db/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - survey_network
+      - db_net
 
   # ─── Spring Boot Backend ──────────────────────────────────
   backend:
+    image: sociologbg2-backend
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: survey_backend
     restart: unless-stopped
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${DB_NAME}
-      SPRING_DATASOURCE_USERNAME: ${DB_USER}
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
-      JWT_SECRET: ${JWT_SECRET}
-      VOTE_HASH_PEPPER: ${VOTE_HASH_PEPPER}
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
-
+    secrets:
+      - db_name
+      - db_user
+      - db_password
+      - jwt_secret
+      - vote_hash_pepper
+      - anthropic_api_key
+      - google_client_id
+    volumes:
+      - ./uploads:/app/uploads
     depends_on:
       - db
     networks:
-      - survey_network
+      - db_net
+      - backend_net
 
 
   # ─── Next.js Frontend ─────────────────────────────────────
   frontend:
+    image: sociologbg2-frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_GOOGLE_CLIENT_ID: 746195861460-ecupldss51rq20dkgb65svs3i83brl54.apps.googleusercontent.com
+        NEXT_PUBLIC_API_URL: https://sociolog.online
     container_name: survey_frontend
     restart: unless-stopped
     environment:
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-      NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-      NEXTAUTH_URL: ${NEXTAUTH_URL}
-      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
-      RESEND_API_KEY: ${RESEND_API_KEY}
+      NEXT_PUBLIC_API_URL: https://sociolog.online
+      NEXTAUTH_URL: https://sociolog.bg
+    secrets:
+      - nextauth_secret
+      - google_client_id
+      - google_client_secret
+      - resend_api_key
     depends_on:
       - backend
     networks:
-      - survey_network
+      - backend_net
+      - public_net
+
   # ─── Nginx ─────────────────────────────────────
   nginx:
     image: nginx:alpine
@@ -71,15 +80,41 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
       - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./uploads:/srv/uploads:ro
     depends_on:
       - frontend
       - backend
     networks:
-      - survey_network
+      - public_net
+      - backend_net
 
 volumes:
   postgres_data:
 
 networks:
-  survey_network:
-    driver: bridge
+  public_net:
+  backend_net:
+  db_net:
+      internal: true
+
+secrets:
+  db_name:
+    external: true
+  db_user:
+    external: true
+  db_password:
+    external: true
+  jwt_secret:
+    external: true
+  google_client_secret:
+    external: true
+  anthropic_api_key:
+    external: true
+  resend_api_key:
+    external: true
+  google_client_id:
+    external: true
+  vote_hash_pepper:
+    external: true
+  nextauth_secret:
+    external: true

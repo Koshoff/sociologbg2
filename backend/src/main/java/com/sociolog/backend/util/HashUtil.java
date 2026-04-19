@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.UUID;
 
 /**
  * Отговаря за анонимното хеширане на потребителски идентификатори.
@@ -56,16 +57,28 @@ public class HashUtil {
     }
 
     /**
-     * Генерира постоянен анонимен хеш за потребител.
-     * Използва се за коментари - един и същи потребител
-     * винаги получава един и същи хеш.
+     * Генерира анонимен хеш за автор на коментар, уникален за всяко проучване.
+     * Формулата е: SHA256(googleId + surveySalt + pepper)
      *
-     * @param googleId  Google ID на потребителя
-     * @return          64-символен hexadecimal стринг
+     * Използва същата тристепенна формула като гласовете — така един и същи
+     * потребител получава различен хеш в различните проучвания и не може да
+     * бъде проследен между тях (cross-survey unlinkability).
+     *
+     * @param googleId    Google Subject ID
+     * @param surveySalt  Уникалният salt на проучването
+     * @return            64-символен hexadecimal стринг
      */
-    public String generateAuthorHash(String googleId) {
-        String input = googleId + pepper;
-        return sha256(input);
+    public String generateAuthorHash(String googleId, String surveySalt) {
+        return sha256(googleId + surveySalt + pepper);
+    }
+
+    /**
+     * Generates an anonymous hash for an upvote.
+     * Formula: SHA256(ip + commentId + pepper)
+     * The raw IP is never stored — only this one-way hash.
+     */
+    public String generateUpvoteHash(String ip, UUID commentId) {
+        return sha256(ip + commentId.toString() + pepper);
     }
 
     /**

@@ -5,9 +5,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface ArticleRepository extends JpaRepository<Article, UUID> {
+    boolean existsBySlug(String slug);
+    Optional<Article> findBySlug(String slug);
     List<Article> findByStatusOrderByPublishedAtDesc(String status);
     List<Article> findAllByOrderByCreatedAtDesc();
     @Query("SELECT a FROM Article a JOIN a.survey s WHERE a.status = 'published' AND s.isActive = true AND s.closesAt > CURRENT_TIMESTAMP ORDER BY a.publishedAt DESC")

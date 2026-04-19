@@ -51,6 +51,11 @@ public class JwtService {
         return extractClaims(token).getSubject();
     }
 
+    public java.time.LocalDateTime extractExpiration(String token) {
+        Date exp = extractClaims(token).getExpiration();
+        return exp.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
+    }
+
     /**
      * Проверява дали токенът е валиден и не е изтекъл.
      */

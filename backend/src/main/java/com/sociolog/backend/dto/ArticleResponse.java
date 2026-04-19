@@ -19,7 +19,8 @@ public record ArticleResponse(
     String surveyTitle,
     LocalDateTime createdAt,
     LocalDateTime surveyClosesAt,
-    LocalDateTime publishedAt
+    LocalDateTime publishedAt,
+    String imageUrl
 ) {
     public static ArticleResponse from(Article article) {
         return new ArticleResponse(
@@ -35,9 +36,10 @@ public record ArticleResponse(
                 article.getCategory(),
                 article.getSurvey() != null ? article.getSurvey().getId() : null,
                 article.getSurvey() != null ? article.getSurvey().getTitle() : null,
-                article.getSurvey() != null ? article.getSurvey().getClosesAt() : null,
                 article.getCreatedAt(),
-                article.getPublishedAt()
+                article.getSurvey() != null ? article.getSurvey().getClosesAt() : null,
+                article.getPublishedAt(),
+                article.getImageUrl()
         );
     }
 }
